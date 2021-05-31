@@ -25,5 +25,7 @@ function pp_CH(obj,option)
         disp(s);
         fprintf('// global phase\n');
         disp(obj.w); 
+    case 'basis'
+        disp(CH2basis(obj));
     end
 end

@@ -27,9 +27,10 @@ end
 % apply C-type gates from left
 function stab_new = CH_SL(param,stab)
     q = param(1);
-    for p = 1:stab.len
-        stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_G(p,q)));
-    end
+    stab.M(q,1) = bitxor(stab.M(q,1),stab.G(q,1));
+    %for p = 1:stab.len
+    %    stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_G(p,q)));
+    %end
     new_gq = stab.get_g(q);
     new_gq = bitset(new_gq,2,~bitxor(bitget(new_gq,1),bitget(new_gq,2)));
     new_gq = bitset(new_gq,1,~bitget(new_gq,1));
@@ -40,28 +41,38 @@ end
 function stab_new = CH_CZL(param,stab)
     q = param(1);
     r = param(2);
-    for p = 1:stab.len
-        stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_G(r,p)));
-        stab.set_M(r,p,bitxor(stab.get_M(r,p),stab.get_G(q,p)));
-    end
+    %for p = 1:stab.len
+    %    stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_G(r,p)));
+    %    stab.set_M(r,p,bitxor(stab.get_M(r,p),stab.get_G(q,p)));
+    %end
+    stab.M(q,1) = bitxor(stab.M(q,1),stab.G(r,1));
+    stab.M(r,1) = bitxor(stab.M(r,1),stab.G(q,1));
     stab_new = stab;
 end
 
 function stab_new = CH_CXL(param,stab)
     q = param(1);
     r = param(2);
+    %fprintf('g_q:%d, g_r:%d\n, g_q+g_r:%d\n',stab.get_g(q),stab.get_g(r),mod(stab.get_g(q)+stab.get_g(r),4));
     stab.set_g(q,mod(stab.get_g(q)+stab.get_g(r),4));
+    %fprintf('new g_q: %d\n',stab.get_g(q));
     % todo: optimize bit ops
     if parity(bitand(stab.M(q),stab.F(r)))
         new_gq = stab.get_g(q);
         new_gq = bitset(new_gq,2,~bitget(new_gq,2));
         stab.set_g(q,new_gq); 
     end
-    for p = 1:stab.len
-        stab.set_G(r,p,bitxor(stab.get_G(r,p),stab.get_G(q,p)));
-        stab.set_F(q,p,bitxor(stab.get_F(q,p),stab.get_F(r,p)));
-        stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_M(r,p)));
-    end
+    %fprintf('M_q: %s,F_r: %s\n',dec2bin(stab.M(q)),dec2bin(stab.F(r)));
+    %fprintf('par: %d\n',parity(bitand(stab.M(q),stab.F(r))));
+    %fprintf('new new g_q: %d\n',stab.get_g(q));
+    %for p = 1:stab.len
+    %    stab.set_G(r,p,bitxor(stab.get_G(r,p),stab.get_G(q,p)));
+    %    stab.set_F(q,p,bitxor(stab.get_F(q,p),stab.get_F(r,p)));
+    %    stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_M(r,p)));
+    %end
+    stab.G(r,1) = bitxor(stab.G(r,1),stab.G(q,1));
+    stab.F(q,1) = bitxor(stab.F(q,1),stab.F(r,1));
+    stab.M(q,1) = bitxor(stab.M(q,1),stab.M(r,1));
     stab_new = stab;
 end
 
@@ -137,17 +148,21 @@ function stab_new = CH_HL(param,stab)
         v1 = bitand(t_oxr_u,stab.v);
         %fprintf('v1:');disp(dec2bin(v1));
         q = 1;
-        while ~bitget(t_oxr_u,q)
-            q = q+1;
-        end
-        if bitget(t,q)
-            y = bitxor(u,bitset(uint8(0),q));
-            %fprintf('y:');disp(dec2bin(y));
+    
+        if v0
+            while ~bitget(v0,q)
+                q = q+1;
+            end
+        elseif v1
+            while ~bitget(v1,q)
+                q = q+1;
+            end
         else
-            y = t;
-            %fprintf('y:');disp(dec2bin(y));
+            fprintf('error CH_HL: v0 and v1 cannot both be 0.\n');
         end
-        
+        v_q = bitget(stab.v,q);
+        %fprintf('vq:');disp(dec2bin(v_q));
+    
         % update Uc = UcVc
         if bitsum(t_oxr_u) > 1
             if v0 
@@ -174,6 +189,14 @@ function stab_new = CH_HL(param,stab)
             end
         end
 
+        if bitget(t,q)
+            y = bitxor(u,bitset(uint8(0),q));
+            %fprintf('y:');disp(dec2bin(y));
+        else
+            y = t;
+            %fprintf('y:');disp(dec2bin(y));
+        end
+
     % step 3: compute w_0, s_a, h_b, c and update w, Uc, Uh accordingly
         y_q =  bitget(y,q);
         %fprintf('y_q:');disp(dec2bin(y_q));
@@ -181,12 +204,10 @@ function stab_new = CH_HL(param,stab)
         h_b = uint8(0);
         c = uint8(0);
         w_w = double(1);
-        v_q = bitget(stab.v,q);
-        %fprintf('v_q:');disp(dec2bin(v_q));
+
         if ~v_q
             if ~y_q
                 if d == 0
-                    %fprintf('~v_q, ~y_q, d==0\n');
                     s_a = 0; h_b = 1; c = 0; w_w = 2.^(0.5);
                 elseif d == 1
                     s_a = 1; h_b = 1; c = 0; w_w = 2.^(0.5);
@@ -201,11 +222,11 @@ function stab_new = CH_HL(param,stab)
                 if d == 0
                     s_a = 0; h_b = 1; c = 0; w_w = 2.^(0.5);
                 elseif d == 1
-                    s_a = 1; h_b = 1; c = 0; w_w = (-1i) * 2.^(0.5);
+                    s_a = 1; h_b = 1; c = 1; w_w = (1i) * 2.^(0.5);
                 elseif d == 2
-                    s_a = 0; h_b = 1; c = 0; w_w = -(2.^(0.5));
+                    s_a = 0; h_b = 1; c = 1; w_w = -(2.^(0.5));
                 elseif d == 3
-                    s_a = 1; h_b = 1; c = 0; w_w = (1i) * 2.^(0.5);
+                    s_a = 1; h_b = 1; c = 0; w_w = (-1i) * 2.^(0.5);
                 else
                     fprintf('error CH_HL: invalid d.\n');
                 end
