@@ -49,6 +49,17 @@ classdef CH_state < handle
             obj.s = stab.s;
             obj.w = stab.w;
         end
+
+        % transpose: make obj the transpose of stab without mutating stab
+        function transpose(obj,stab)
+            %obj.F = stab.F;
+            %obj.G = stab.G;
+            %obj.M = stab.M;
+            %obj.g = stab.g;
+            obj.v = stab.v;
+            obj.s = stab.s;
+            obj.w = stab.w;
+        end
  
         % CH_state property get and set
         % not required as properties are public, but this abstracts out bit ops and simplifies refactoring

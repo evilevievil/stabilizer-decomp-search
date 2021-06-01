@@ -5,6 +5,7 @@ len = 8;
 vec_len = 2.^len;
 bit_H = 2.^(-0.5)*[1,1;1,-1];
 bit_S = [1,0;0,1i];
+bit_ST = [1,0;0,-1i];
 bit_X = [0,1;1,0];
 bit_Z = [1,0;0,-1];
 bit_I = [1,0;0,1];
@@ -13,11 +14,13 @@ bit_I_1 = [0,0;0,1];
 rng('default');
 %% make gates by tensor product
 S_array = zeros(vec_len,vec_len,len);
+ST_array = zeros(vec_len,vec_len,len);
 H_array = zeros(vec_len,vec_len,len);
 CX_array = zeros(vec_len,vec_len,len,len);
 CZ_array = zeros(vec_len,vec_len,len,len);
 for i = 1:len
     S_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_S),tensor_exp(bit_I,len-i));
+    ST_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_ST),tensor_exp(bit_I,len-i));
     H_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_H),tensor_exp(bit_I,len-i));
 end
 
@@ -53,7 +56,8 @@ state_vector = zeros(vec_len,1);
 state_vector(1) = 1; % zero state
 
 
-%% test left gates
+%% test left gates 
+%% (not testing right gates separately b/c HL and conjugate apply right gates)
 for i = 1:1000
     gate_choice = randi(6,1,1);
     if gate_choice == 1  %SLs
