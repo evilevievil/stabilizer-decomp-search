@@ -33,25 +33,42 @@ end
 function stab_new = CH_SL(param,stab)
     q = param(1);
     stab.M(q,1) = bitxor(stab.M(q,1),stab.G(q,1));
-    %for p = 1:stab.len
-    %    stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_G(p,q)));
-    %end
     new_gq = stab.get_g(q);
     new_gq = bitset(new_gq,2,~bitxor(bitget(new_gq,1),bitget(new_gq,2)));
     new_gq = bitset(new_gq,1,~bitget(new_gq,1));
     stab.set_g(q,new_gq); 
+    % conjugate
+    for p = 1:stab.len
+        stab.set_MT(p,q,bitxor(stab.get_MT(p,q),stab.get_FT(p,q)));
+        % todo: optimize bit ops
+        if stab.get_FT(p,q)
+            new_gTp = stab.get_gT(p);
+            %fprintf('p=%d, old new_gTp:%d bit1=%d,bit2=%d\n',p,new_gTp,bitget(new_gTp,1),bitget(new_gTp,2));
+            new_gTp = bitset(stab.get_gT(p),2,bitxor(bitget(new_gTp,1),bitget(new_gTp,2)));
+            %fprintf('p=%d, interm new_gTp: %d\n',p,new_gTp);
+            new_gTp = bitset(new_gTp,1,~bitget(new_gTp,1));
+            %fprintf('p=%d, new new_gTp: %d\n',p,new_gTp);
+            stab.set_gT(p,new_gTp); 
+        end
+    end
     stab_new = stab;
 end
 
 function stab_new = CH_CZL(param,stab)
     q = param(1);
     r = param(2);
-    %for p = 1:stab.len
-    %    stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_G(r,p)));
-    %    stab.set_M(r,p,bitxor(stab.get_M(r,p),stab.get_G(q,p)));
-    %end
     stab.M(q,1) = bitxor(stab.M(q,1),stab.G(r,1));
     stab.M(r,1) = bitxor(stab.M(r,1),stab.G(q,1));
+    % conjugate
+    for p = 1:stab.len
+        stab.set_MT(p,q,bitxor(stab.get_MT(p,q),stab.get_FT(p,r)));
+        stab.set_MT(p,r,bitxor(stab.get_MT(p,r),stab.get_FT(p,q)));
+        if stab.get_FT(p,q) && stab.get_FT(p,r)
+            new_gTp = stab.get_gT(p);
+            new_gTp = bitset(new_gTp,2,~bitget(new_gTp,2));
+            stab.set_gT(p,new_gTp); 
+        end
+    end
     stab_new = stab;
 end
 
@@ -70,14 +87,15 @@ function stab_new = CH_CXL(param,stab)
     %fprintf('M_q: %s,F_r: %s\n',dec2bin(stab.M(q)),dec2bin(stab.F(r)));
     %fprintf('par: %d\n',parity(bitand(stab.M(q),stab.F(r))));
     %fprintf('new new g_q: %d\n',stab.get_g(q));
-    %for p = 1:stab.len
-    %    stab.set_G(r,p,bitxor(stab.get_G(r,p),stab.get_G(q,p)));
-    %    stab.set_F(q,p,bitxor(stab.get_F(q,p),stab.get_F(r,p)));
-    %    stab.set_M(q,p,bitxor(stab.get_M(q,p),stab.get_M(r,p)));
-    %end
     stab.G(r,1) = bitxor(stab.G(r,1),stab.G(q,1));
     stab.F(q,1) = bitxor(stab.F(q,1),stab.F(r,1));
     stab.M(q,1) = bitxor(stab.M(q,1),stab.M(r,1));
+    % conjugate
+    for p = 1:stab.len
+        stab.set_GT(p,q,bitxor(stab.get_GT(p,q),stab.get_GT(p,r)));
+        stab.set_FT(p,r,bitxor(stab.get_FT(p,r),stab.get_FT(p,q)));
+        stab.set_MT(p,q,bitxor(stab.get_MT(p,q),stab.get_MT(p,r)));
+    end
     stab_new = stab;
 end
 
@@ -94,6 +112,12 @@ function stab_new = CH_SR(param,stab)
             stab.set_g(p,new_gp); 
         end
     end
+    % conjugate
+    stab.MT(q,1) = bitxor(stab.MT(q,1),stab.GT(q,1));
+    new_gTp = stab.get_gT(p);
+    new_gTp = bitset(stab.get_gT(p),2,bitxor(bitget(new_gTp,1),bitget(new_gTp,2)));
+    new_gTp = bitset(new_gTp,1,~bitget(new_gTp,1));
+    stab.set_gT(p,new_gTp); 
     stab_new = stab;
 end
 
@@ -110,6 +134,9 @@ function stab_new = CH_CZR(param,stab)
             stab.set_g(p,new_gp); 
         end
     end
+    % conjugate
+    stab.MT(q,1) = bitxor(stab.MT(q,1),stab.GT(r,1));
+    stab.MT(r,1) = bitxor(stab.MT(r,1),stab.GT(q,1));
     stab_new = stab;
 end
 
@@ -121,6 +148,16 @@ function stab_new = CH_CXR(param,stab)
         stab.set_F(p,r,bitxor(stab.get_F(p,r),stab.get_F(p,q)));
         stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_M(p,r)));
     end
+    % conjugate
+    stab.set_gT(q,mod(stab.get_gT(q)+stab.get_gT(r),4));
+    if parity(bitand(stab.MT(q),stab.FT(r)))
+        new_gTq = stab.get_gT(q);
+        new_gTq = bitset(new_gTq,2,~bitget(new_gTq,2));
+        stab.set_gT(q,new_gTq); 
+    end
+    stab.GT(r,1) = bitxor(stab.GT(r,1),stab.GT(q,1));
+    stab.FT(q,1) = bitxor(stab.FT(q,1),stab.FT(r,1));
+    stab.MT(q,1) = bitxor(stab.MT(q,1),stab.MT(r,1));
     stab_new = stab;
 end
 

@@ -1,9 +1,10 @@
 %%
 %%
 %% globals
+%% CAVEAT!!!! Clear workspace before each test run!
 len = 2;
 vec_len = 2.^len;
-num_gates = 1000;
+num_gates = 100;
 bit_H = 2.^(-0.5)*[1,1;1,-1];
 bit_S = [1,0;0,1i];
 bit_X = [0,1;1,0];
@@ -51,27 +52,36 @@ s = CH_state(len);
 s.CH_init('zero');
 %% init zero state vector
 state_vector = zeros(vec_len,1);
-state_vector(1) = 1; % zero state
+% start with uniform superposition state
+for i = 1:len
+    s.CH_gate('HL',i);
+end
 
-%% test left gates
-%% (not testing right gates separately b/c HL and conjugate apply right gates)
+for i = 1:vec_len
+    state_vector(i) = sqrt(1/vec_len); 
+end
+
+gate_record = zeros(num_gates,3);
+
+s_conj = CH_state(len);
+    s_conj.transpose(s);
+    s_conj.pp_CH('ch');
+    s_conj.pp_CH('basis');
+
+%% apply gates to construct s
 for i = 1:num_gates
-    gate_choice = randi(6,1,1);
+    gate_choice = randi(2,1,1);
     if gate_choice == 1  %SLs
         bit_choice = randi(len,1,1);
         gate = S_array(:,:,bit_choice);
         s.CH_gate('SL',bit_choice);
-    elseif gate_choice == 2  %HL
-        bit_choice = randi(len,1,1);
-        gate = H_array(:,:,bit_choice);
-        s.CH_gate('HL',bit_choice);
         gate_record(i,:) = [gate_choice,bit_choice(1),-1];
-    elseif gate_choice == 3 || gate_choice == 4 %CXL
+    elseif gate_choice == 2 %CXL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
         gate = CX_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CXL',bit_choice);
         gate_record(i,:) = [gate_choice,bit_choice(1),bit_choice(2)];
-    elseif gate_choice == 5 || gate_choice == 6 %CZL
+    elseif gate_choice == 3 %CZL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
         gate = CZ_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CZL',bit_choice);
@@ -79,13 +89,41 @@ for i = 1:num_gates
     else
         fprintf('error invalid gate choice.\n');
     end
-    state_vector = gate * state_vector;
-    s_state_vec = CH2basis(s);
-    
-    fprintf('%dth gate %d test!\n',i,gate_choice);
-    disp(bit_choice);
-    %disp(state_vector); disp(s_state_vec);
-    %s.pp_CH('ch');
-    assert(approx_equal(state_vector,s_state_vec,0.000000001)); %% may need +- to account for rounding error...
-    fprintf('%dth gate %d passed!\n',i,gate_choice);
+    fprintf('%dth test\n',i);
+    s_conj = CH_state(len);
+    s_conj.transpose(s);
+    s_conj.pp_CH('ch');
+    s_conj.pp_CH('basis');
 end
+
+%%
+s.pp_CH('ch');
+s.pp_CH('basis');
+s_conj = CH_state(len);
+s_conj.transpose(s);
+s_conj.pp_CH('ch');
+s_conj.pp_CH('basis');
+
+%% apply gates to transpose
+for i = 1:num_gates
+    gate_choice = gate_record(i,1);
+    bit_choice_1 = gate_record(i,2);
+    bit_choice_2 = gate_record(i,3);
+    if gate_choice == 1  %SLs
+        s_conj.CH_gate('SL',bit_choice_1);
+    elseif gate_choice == 2 %CXL
+        s_conj.CH_gate('CXL',[bit_choice_1,bit_choice_2]);
+    elseif gate_choice == 3 %CZL
+        s_conj.CH_gate('CZL',[bit_choice_1,bit_choice_2]);
+    else
+        fprintf('error invalid gate choice.\n');
+    end
+    fprintf('%dth test\n',i);
+    %s_conj.pp_CH('ch');
+    s_conj_state_vec = CH2basis(s_conj);
+    %disp(state_vector); disp(s_conj_state_vec); 
+end
+
+assert(approx_equal(state_vector,s_conj_state_vec,0.000000001));
+fprintf('conjugate test passed!\n');
+

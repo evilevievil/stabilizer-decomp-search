@@ -17,6 +17,15 @@ classdef CH_state < handle
         % 2-bit x len array storing phase for Uc^*XpUc stabilizer tableau (phase part)
         g (1,1) uint16 = 0
         % len bit array storing Uh
+        % len x len bit matrix storing UcXpUc^* stabilizer tableau (X part)
+        FT (8,1) uint8 = zeros(8,1)
+        % len x len bit matrix storing UcZpUc^* stabilizer tableau
+        GT (8,1) uint8 = zeros(8,1)
+        % len x len bit matrix storing UcXpUc^* stabilizer tableau (Z part)
+        MT (8,1) uint8 = zeros(8,1)
+        % 2-bit x len array storing phase for UcXpUc^* stabilizer tableau (phase part)
+        gT (1,1) uint16 = 0
+        % len bit array storing Uh
         v (1,1) uint8 = 0
         % len bit array storing |s>
         s (1,1) uint8 = 0
@@ -45,6 +54,10 @@ classdef CH_state < handle
             obj.G = stab.G;
             obj.M = stab.M;
             obj.g = stab.g;
+            obj.FT = stab.FT;
+            obj.GT = stab.GT;
+            obj.MT = stab.MT;
+            obj.gT = stab.gT;
             obj.v = stab.v;
             obj.s = stab.s;
             obj.w = stab.w;
@@ -52,10 +65,14 @@ classdef CH_state < handle
 
         % transpose: make obj the transpose of stab without mutating stab
         function transpose(obj,stab)
-            %obj.F = stab.F;
-            %obj.G = stab.G;
-            %obj.M = stab.M;
-            %obj.g = stab.g;
+            obj.F = stab.FT;
+            obj.G = stab.GT;
+            obj.M = stab.MT;
+            obj.g = stab.gT;
+            obj.FT = stab.F;
+            obj.GT = stab.G;
+            obj.MT = stab.M;
+            obj.gT = stab.g;
             obj.v = stab.v;
             obj.s = stab.s;
             obj.w = stab.w;
@@ -83,6 +100,24 @@ classdef CH_state < handle
             g_i2 = bitshift(uint8(bitget(obj.g,2*i)),1);
             g_i = bitxor(g_i1,g_i2);
         end
+
+        function FT_ij = get_FT(obj,i,j) 
+            FT_ij = bitget(obj.FT(i,1),j);
+        end
+       
+        function GT_ij = get_GT(obj,i,j) 
+            GT_ij = bitget(obj.GT(i,1),j);
+        end
+ 
+        function MT_ij = get_MT(obj,i,j) 
+            MT_ij = bitget(obj.MT(i,1),j);
+        end
+ 
+        function gT_i = get_gT(obj,i) 
+            gT_i1 = uint8(bitget(obj.gT,2*i-1));
+            gT_i2 = bitshift(uint8(bitget(obj.gT,2*i)),1);
+            gT_i = bitxor(gT_i1,gT_i2);
+        end
  
         function v_i = get_v(obj,i) 
             v_i = bitget(obj.v,i);
@@ -108,6 +143,23 @@ classdef CH_state < handle
         function set_g(obj,i,b) 
             obj.g = bitset(obj.g,2*i-1,bitget(b,1));
             obj.g = bitset(obj.g,2*i,bitget(b,2));
+        end
+
+        function set_FT(obj,i,j,b) 
+            obj.FT(i,1) = bitset(obj.FT(i,1),j,b);
+        end
+ 
+        function set_GT(obj,i,j,b) 
+            obj.GT(i,1) = bitset(obj.GT(i,1),j,b);
+        end
+ 
+        function set_MT(obj,i,j,b) 
+            obj.MT(i,1) = bitset(obj.MT(i,1),j,b);
+        end
+ 
+        function set_gT(obj,i,b) 
+            obj.gT = bitset(obj.gT,2*i-1,bitget(b,1));
+            obj.gT = bitset(obj.gT,2*i,bitget(b,2));
         end
  
         function set_v(obj,i,b) 

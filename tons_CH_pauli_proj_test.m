@@ -1,7 +1,7 @@
 %%
 %%
 %% globals
-len = 8;
+len = 3;
 vec_len = 2.^len;
 bit_X = [0,1;1,0];
 bit_Z = [1,0;0,-1];
@@ -40,7 +40,7 @@ for i = 1:vec_len
 end
 
 %% test pauli projectors
-for i = 1:10
+for i = 1:10 %projector only test
     projector_choice = randi(6,1,1);
     if projector_choice == 1  %+X
         bit_choice = randi(len,1,1);

@@ -30,8 +30,8 @@ function inner_product = CH_basis_inner_product(x,stab)
     %    end
     %end
     %mu_sign = parity(bitand(t,u));
-    % fprintf('print mu sign\n');
-    % disp(mu_sign);
+    %fprintf('print mu sign\n');
+    %disp(mu_sign);
     % compute neg and sign from applying Uc*XUcUh on s
     s = stab.s;
     % disp(u);
@@ -40,7 +40,7 @@ function inner_product = CH_basis_inner_product(x,stab)
     v_len = bitsum(v);
     neg = parity(bitand(v,bitand(u,s)))+mu_sign;
     one = bitand(bitcmp(v),bitxor(bitcmp(u),s));
-    % fprintf('neg: %s, one: %s\n', dec2bin(neg),dec2bin(one));
+    %fprintf('neg: %s, one: %s\n', dec2bin(neg),dec2bin(one));
     if one == bitcmp(v)
         inner_product = stab.w * (-1).^(double(neg)) * (1i).^(double(mu)) * 2.^(-0.5 * double(v_len));
     else

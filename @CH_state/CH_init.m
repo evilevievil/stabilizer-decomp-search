@@ -9,6 +9,8 @@ function CH_init(obj,option)
         for i = 1:obj.len
             obj.set_F(i,i,1);
             obj.set_G(i,i,1);
+            obj.set_FT(i,i,1);
+            obj.set_GT(i,i,1);
         end
         obj.w = 1;
     otherwise
