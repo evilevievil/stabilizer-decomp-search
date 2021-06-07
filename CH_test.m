@@ -210,6 +210,8 @@ assert(s.s == bin2dec('0001'));
 assert(s.w == (1+1i) * 2.^(-0.5));
 fprintf('HL gate simple sanity tests passed!\n');
 
+% todo: sanity tests for pauli projector and conjugate?
+
 %% inner product/projection sanity tests
 
 % basis stab inner product sanity check
@@ -232,13 +234,32 @@ assert(CH_basis_inner_product(bin2dec('10'),s)==0);
 assert(CH_basis_inner_product(bin2dec('11'),s)==2.^(-0.5)*(1i));
 fprintf('basis stab inner product tests passed!\n');
 
+% stab stab inner product sanity check
+s1 = CH_state(2);
+s1.CH_init('zero');
+s1.CH_gate('HL',1);
 
+s2 = CH_state(2);
+s2.CH_init('zero');
+s2.CH_gate('HL',1);
 
+assert(CH_CH_inner_product(s1,s2)==1);
+s2.CH_gate('HL',2);
+assert(CH_CH_inner_product(s1,s2)==2.^-0.5);
+s2.CH_gate('SL',1);
+assert(approx_equal(CH_CH_inner_product(s1,s2),(1+1i)*(2.^-1.5),0.000000001));
+assert(approx_equal(CH_CH_inner_product(s2,s1),(1-1i)*(2.^-1.5),0.000000001));
+fprintf('stab stab inner product tests passed!\n');
 
-
-
-
-
-
-
-
+% Projection Sanity tests
+s3 = CH_state(2);
+s3.CH_init('zero');
+s3.CH_gate('HL',1);
+a = zeros(1,4); % (1/root2,0,1/root2,0)
+a(1) = 2.^-0.5;
+a(2) = 2.^-0.5; %follow reverse string convention 
+a(3) = sqrt(0);  %follow reverse string convention 
+a(4) = sqrt(0);
+disp(CH_decomp_project(a,[s3],2,1));
+assert(approx_equal(CH_decomp_project(a,[s3],2,1),1,0.000000001));
+fprintf('stab decomp projection tests passed!\n');

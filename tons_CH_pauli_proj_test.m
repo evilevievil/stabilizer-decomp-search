@@ -78,7 +78,3 @@ for i = 1:10 %projector only test
     assert(approx_equal(state_vector,s_state_vec,0.000000001)); %% may need +- to account for rounding error...
     fprintf('%dth projector %d passed!\n',i,projector_choice);
 end
-
-
-
-

@@ -126,4 +126,3 @@ end
 
 assert(approx_equal(state_vector,s_conj_state_vec,0.000000001));
 fprintf('conjugate test passed!\n');
-

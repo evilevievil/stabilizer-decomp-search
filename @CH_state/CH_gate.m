@@ -189,10 +189,3 @@ function stab_new = CH_HL(param,stab)
     end
     stab_new = stab;
 end
-
-
-
-
-
-
-

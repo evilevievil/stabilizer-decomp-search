@@ -17,5 +17,3 @@ function CH_init(obj,option)
         fprintf('error CH_init: invalid option string.\n');
     end
 end
-
-

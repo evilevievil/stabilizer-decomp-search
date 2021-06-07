@@ -65,17 +65,14 @@ for i = 1:num_gates
         bit_choice = randi(len,1,1);
         gate = H_array(:,:,bit_choice);
         s.CH_gate('HL',bit_choice);
-        gate_record(i,:) = [gate_choice,bit_choice(1),-1];
     elseif gate_choice == 3 || gate_choice == 4 %CXL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
         gate = CX_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CXL',bit_choice);
-        gate_record(i,:) = [gate_choice,bit_choice(1),bit_choice(2)];
     elseif gate_choice == 5 || gate_choice == 6 %CZL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
         gate = CZ_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CZL',bit_choice);
-        gate_record(i,:) = [gate_choice,bit_choice(1),bit_choice(2)];
     else
         fprintf('error invalid gate choice.\n');
     end

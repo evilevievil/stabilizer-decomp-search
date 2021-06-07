@@ -131,4 +131,3 @@ function superpos2circuit(t,u,a,d,stab)
     stab.set_s(q,c);
     stab.w = stab.w * 2.^(-0.5) * ((-1).^double(a)) * w_w;
 end
-
