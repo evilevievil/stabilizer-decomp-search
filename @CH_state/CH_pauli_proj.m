@@ -15,10 +15,28 @@ function stab_new = CH_pauli_proj(obj,g,q)
         stab_new = CH_Y(0,q,obj);
     case '-Y'
         stab_new = CH_Y(1,q,obj);
+    case 'rand'
+        choice = randi(6,1,1);
+        q = randi(obj.len,1,1);
+        if choice==1
+            stab_new = CH_Z(0,q,obj);
+        elseif choice==2
+            stab_new = CH_Z(1,q,obj);
+        elseif choice==3
+            stab_new = CH_X(0,q,obj);
+        elseif choice==4
+            stab_new = CH_X(1,q,obj);
+        elseif choice==5
+            stab_new = CH_Y(0,q,obj);
+        else % choice==6
+            stab_new = CH_Y(1,q,obj);
+        end
     otherwise
         fprintf('error CH_pauli_proj: invalid pauli projector name.\n');
     end
 end
+
+
 
 
 function stab_new = CH_Z(neg,q,stab)
@@ -101,7 +119,7 @@ function stab_new = CH_Y(neg,q,stab)
 
     if t ~= u
         % todo: refactor superpos2circuit to take 2.^(0.5) out 
-        fprintf('superpos case\n');
+        %fprintf('superpos case\n');
         superpos2circuit(t,u,a,d,stab_new);
         stab_new.w = 0.5 * stab_new.w * 2.^(0.5);
     else

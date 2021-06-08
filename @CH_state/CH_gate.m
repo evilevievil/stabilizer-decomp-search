@@ -24,6 +24,24 @@ function stab_new = CH_gate(obj,g,param)
         stab_new = CH_HL(param,obj);
     case 'STR'
         stab_new = CH_HL(param,obj);
+    case 'rand'
+        gate_choice = randi(6,1,1);
+        if gate_choice == 1  %SLs
+            bit_choice = randi(obj.len,1,1);
+            obj.CH_gate('SL',bit_choice);
+        elseif gate_choice == 2  %HL
+            bit_choice = randi(obj.len,1,1);
+            obj.CH_gate('HL',bit_choice);
+        elseif gate_choice == 3 || gate_choice == 4 %CXL
+            bit_choice = randperm(obj.len,2); % use 1st as control and 2nd as result
+            obj.CH_gate('CXL',bit_choice);
+        elseif gate_choice == 5 || gate_choice == 6 %CZL
+            bit_choice = randperm(obj.len,2); % use 1st as control and 2nd as result
+            obj.CH_gate('CZL',bit_choice);
+        else
+            fprintf('error invalid gate choice.\n');
+        end
+        stab_new = obj;
     otherwise
         fprintf('error CH_gate: invalid gate name.\n');
     end
@@ -114,10 +132,10 @@ function stab_new = CH_SR(param,stab)
     end
     % conjugate
     stab.MT(q,1) = bitxor(stab.MT(q,1),stab.GT(q,1));
-    new_gTp = stab.get_gT(p);
-    new_gTp = bitset(stab.get_gT(p),2,bitxor(bitget(new_gTp,1),bitget(new_gTp,2)));
-    new_gTp = bitset(new_gTp,1,~bitget(new_gTp,1));
-    stab.set_gT(p,new_gTp); 
+    new_gTq = stab.get_gT(q);
+    new_gTq = bitset(stab.get_gT(q),2,bitxor(bitget(new_gTq,1),bitget(new_gTq,2)));
+    new_gTq = bitset(new_gTq,1,~bitget(new_gTq,1));
+    stab.set_gT(q,new_gTq); 
     stab_new = stab;
 end
 

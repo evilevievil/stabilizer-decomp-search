@@ -13,6 +13,11 @@ function CH_init(obj,option)
             obj.set_GT(i,i,1);
         end
         obj.w = 1;
+    case 'rand' % generate by applying random gates!
+        obj.CH_init('zero');
+        for i = 1:30
+            obj.CH_gate('rand',[-1,-1]);
+        end
     otherwise
         fprintf('error CH_init: invalid option string.\n');
     end

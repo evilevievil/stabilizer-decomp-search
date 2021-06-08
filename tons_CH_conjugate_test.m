@@ -2,11 +2,11 @@
 %%
 %% globals
 %% CAVEAT!!!! Clear workspace before each test run!
-len = 2;
+len = 8;
 vec_len = 2.^len;
-num_gates = 100;
+num_gates = 1000;
 bit_H = 2.^(-0.5)*[1,1;1,-1];
-bit_S = [1,0;0,1i];
+bit_ST = [1,0;0,-1i];
 bit_X = [0,1;1,0];
 bit_Z = [1,0;0,-1];
 bit_I = [1,0;0,1];
@@ -14,12 +14,12 @@ bit_I_0 = [1,0;0,0];
 bit_I_1 = [0,0;0,1];
 rng('default');
 %% make gates by tensor product
-S_array = zeros(vec_len,vec_len,len);
+ST_array = zeros(vec_len,vec_len,len);
 H_array = zeros(vec_len,vec_len,len);
 CX_array = zeros(vec_len,vec_len,len,len);
 CZ_array = zeros(vec_len,vec_len,len,len);
 for i = 1:len
-    S_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_S),tensor_exp(bit_I,len-i));
+    ST_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_ST),tensor_exp(bit_I,len-i));
     H_array(:,:,i) = kron(kron(tensor_exp(bit_I,i-1),bit_H),tensor_exp(bit_I,len-i));
 end
 
@@ -60,49 +60,58 @@ end
 for i = 1:vec_len
     state_vector(i) = sqrt(1/vec_len); 
 end
+state_vector_start = state_vector;
 
 gate_record = zeros(num_gates,3);
 
 s_conj = CH_state(len);
-    s_conj.transpose(s);
-    s_conj.pp_CH('ch');
-    s_conj.pp_CH('basis');
+s_conj.transpose(s);
+s_conj.pp_CH('ch');
+s_conj.pp_CH('basis');
 
-%% apply gates to construct s
+gate = tensor_exp(bit_I,len);
+
+%% apply gates to construct s and test conjugate amplitude
 for i = 1:num_gates
     gate_choice = randi(2,1,1);
     if gate_choice == 1  %SLs
         bit_choice = randi(len,1,1);
-        gate = S_array(:,:,bit_choice);
+        gate = gate * ST_array(:,:,bit_choice);
         s.CH_gate('SL',bit_choice);
         gate_record(i,:) = [gate_choice,bit_choice(1),-1];
     elseif gate_choice == 2 %CXL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
-        gate = CX_array(:,:,bit_choice(1),bit_choice(2));
+        gate = gate * CX_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CXL',bit_choice);
         gate_record(i,:) = [gate_choice,bit_choice(1),bit_choice(2)];
     elseif gate_choice == 3 %CZL
         bit_choice = randperm(len,2); % use 1st as control and 2nd as result
-        gate = CZ_array(:,:,bit_choice(1),bit_choice(2));
+        gate = gate * CZ_array(:,:,bit_choice(1),bit_choice(2));
         s.CH_gate('CZL',bit_choice);
         gate_record(i,:) = [gate_choice,bit_choice(1),bit_choice(2)];
     else
         fprintf('error invalid gate choice.\n');
     end
     fprintf('%dth test\n',i);
+    state_vector = gate * state_vector_start;
     s_conj = CH_state(len);
     s_conj.transpose(s);
-    s_conj.pp_CH('ch');
-    s_conj.pp_CH('basis');
+    s_conj_state_vec = CH2basis(s_conj);
+    s_state_vec = CH2basis(s);
+    %disp(state_vector);
+    %disp(s_conj_state_vec);
+    assert(approx_equal(state_vector,s_conj_state_vec,0.000000001));
+    %s_conj.pp_CH('ch');
+    %s_conj.pp_CH('basis');
 end
 
 %%
-s.pp_CH('ch');
-s.pp_CH('basis');
-s_conj = CH_state(len);
-s_conj.transpose(s);
-s_conj.pp_CH('ch');
-s_conj.pp_CH('basis');
+%s.pp_CH('ch');
+%s.pp_CH('basis');
+%s_conj = CH_state(len);
+%s_conj.transpose(s);
+%s_conj.pp_CH('ch');
+%s_conj.pp_CH('basis');
 
 %% apply gates to transpose
 for i = 1:num_gates
@@ -120,9 +129,10 @@ for i = 1:num_gates
     end
     fprintf('%dth test\n',i);
     %s_conj.pp_CH('ch');
-    s_conj_state_vec = CH2basis(s_conj);
+    %s_conj_state_vec = CH2basis(s_conj);
     %disp(state_vector); disp(s_conj_state_vec); 
 end
 
-assert(approx_equal(state_vector,s_conj_state_vec,0.000000001));
+s_conj_state_vec = CH2basis(s_conj);
+assert(approx_equal(state_vector_start,s_conj_state_vec,0.000000001));
 fprintf('conjugate test passed!\n');

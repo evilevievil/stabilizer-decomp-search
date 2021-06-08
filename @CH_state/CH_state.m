@@ -75,7 +75,7 @@ classdef CH_state < handle
             obj.gT = stab.g;
             obj.v = stab.v;
             obj.s = stab.s;
-            obj.w = stab.w;
+            obj.w = conj(stab.w);
         end
  
         % CH_state property get and set

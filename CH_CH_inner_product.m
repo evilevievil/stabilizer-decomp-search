@@ -47,6 +47,11 @@ function inner_product = CH_CH_inner_product(astab,bstab)
         end
         abstab.set_g(i,mu_i);
     end
+    abstab.w = abstab.w * conj(astab.w);
+
+    %fprintf('abstab print:\n');
+    %abstab.pp_CH('ch');
+    %abstab.pp_CH('basis');
 
     % apply Uha 
     for i = 1:abstab.len
