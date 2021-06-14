@@ -28,8 +28,8 @@ function projection = CH_decomp_project(a,stab_array,len,decomp_len)
             end
         end
         
-        disp(a_stab_array);
-        disp(G);
+        %disp(a_stab_array);
+        %disp(G);
 
         % compute projection
         for i = 1:decomp_len

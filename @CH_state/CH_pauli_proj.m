@@ -19,16 +19,22 @@ function stab_new = CH_pauli_proj(obj,g,q)
         choice = randi(6,1,1);
         q = randi(obj.len,1,1);
         if choice==1
+            fprintf('Pauli +Z.\n');
             stab_new = CH_Z(0,q,obj);
         elseif choice==2
+            fprintf('Pauli -Z.\n');
             stab_new = CH_Z(1,q,obj);
         elseif choice==3
+            fprintf('Pauli +X.\n');
             stab_new = CH_X(0,q,obj);
         elseif choice==4
+            fprintf('Pauli -X.\n');
             stab_new = CH_X(1,q,obj);
         elseif choice==5
+            fprintf('Pauli +Y.\n');
             stab_new = CH_Y(0,q,obj);
         else % choice==6
+            fprintf('Pauli -Y.\n');
             stab_new = CH_Y(1,q,obj);
         end
     otherwise
