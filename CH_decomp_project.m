@@ -17,7 +17,7 @@ function projection = CH_decomp_project(a,stab_array,len,decomp_len)
         end
     end
     % todo: can I optimize this?
-    if det(G) ~= 0
+    if abs(det(G)-0) > 0.001
         G_inv = inv(G);
         % compute basis array
         for i = 1:decomp_len
