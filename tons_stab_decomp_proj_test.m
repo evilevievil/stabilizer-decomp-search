@@ -117,6 +117,22 @@ end
 %% 
 function new_stab_decomp = pauli_update(stab_decomp,decomp_len)
     state_choice = randi(decomp_len,1,1);
-    stab_decomp(state_choice) = stab_decomp(state_choice).CH_pauli_proj('rand',-1);
+    bit_choice = randi(4,len,1);
+    sign_choice = randi(2,1,1)-1;
+    x_bits = uint8(0);
+    z_bits = uint8(0);
+    for i = 1:len
+        if bit_choice(i,1) == 1 % I  
+            continue;
+        elseif bit_choice(i,1) == 2 % X
+            x_bits = bitset(x_bits,i,1);
+        elseif bit_choice(i,1) == 3 % Z
+            z_bits = bitset(z_bits,i,1);
+        else % Y
+            x_bits = bitset(x_bits,i,1);
+            z_bits = bitset(z_bits,i,1);
+        end
+    end
+    stab_decomp(state_choice) = stab_decomp(state_choice).CH_pauli_proj(sign_choice,x_bits,z_bits);
     new_stab_decomp = stab_decomp;
 end
