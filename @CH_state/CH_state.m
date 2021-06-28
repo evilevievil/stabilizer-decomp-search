@@ -7,7 +7,7 @@ classdef CH_state < handle
         % todo: make functions more robust by asserting unuused bit equal 0
         % all matrices are filled starting from top right (0,0) position
         % length/number of qubits of state
-        len (1,1) int32 {mustBeNonnegative,mustBeInteger, mustBeFinite} 
+        len (1,1) int32 
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (X part)
         F (8,1) uint8 = zeros(8,1)
         % len x len bit matrix storing Uc^*ZpUc stabilizer tableau

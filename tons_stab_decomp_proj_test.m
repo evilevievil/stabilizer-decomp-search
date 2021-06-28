@@ -119,8 +119,8 @@ function new_stab_decomp = pauli_update(stab_decomp,decomp_len)
     state_choice = randi(decomp_len,1,1);
     bit_choice = randi(4,len,1);
     sign_choice = randi(2,1,1)-1;
-    x_bits = uint8(0);
-    z_bits = uint8(0);
+    x_bits = const.init_uint;
+    z_bits = const.init_uint;
     for i = 1:len
         if bit_choice(i,1) == 1 % I  
             continue;

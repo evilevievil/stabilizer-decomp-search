@@ -34,8 +34,8 @@ for k=1:100
         bit_choice = randi(4,len,1);
         sign_choice = randi(2,1,1);
         sign_choice = sign_choice-1;
-        x_bits = uint8(0);
-        z_bits = uint8(0);
+        x_bits = const.init_uint;
+        z_bits = const.init_uint;
         for j = 1:len
             if bit_choice(j,1) == 1 % I  
                 projector = kron(projector,bit_I);

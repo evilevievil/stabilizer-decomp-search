@@ -23,7 +23,7 @@ function projection = CH_decomp_project(a,stab_array,len,decomp_len)
         for i = 1:decomp_len
             for j = 1:a_len
                 % careful! Matlab 1 indexing :(
-                a_stab_array(i) = a_stab_array(i)  + conj(a(j)) * CH_basis_inner_product(uint8(j-1),stab_array(i));
+                a_stab_array(i) = a_stab_array(i)  + conj(a(j)) * CH_basis_inner_product(j-1,stab_array(i));
                 %disp(a_stab_array);
             end
         end

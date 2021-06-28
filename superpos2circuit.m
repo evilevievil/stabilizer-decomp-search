@@ -55,7 +55,7 @@ function superpos2circuit(t,u,a,d,stab)
     end
 
     if bitget(t,q)
-        y = bitxor(u,bitset(uint8(0),q));
+        y = bitxor(u,bitset(const.init_uint,q));
         %fprintf('y:');disp(dec2bin(y));
     else
         y = t;
@@ -65,9 +65,9 @@ function superpos2circuit(t,u,a,d,stab)
 % step 3: compute w_0, s_a, h_b, c and update w, Uc, Uh accordingly
     y_q =  bitget(y,q);
     %fprintf('y_q:');disp(dec2bin(y_q));
-    s_a = uint8(0); 
-    h_b = uint8(0);
-    c = uint8(0);
+    s_a = const.init_uint; 
+    h_b = const.init_uint;
+    c = const.init_uint;
     w_w = double(1);
 
     if ~v_q

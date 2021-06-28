@@ -3,10 +3,10 @@
 %%  computes inner product <stab_i|stab_j>, where both are stabilizer states of bit length len
 %%
 function inner_product = CH_basis_inner_product(x,stab)
-    t = uint8(0);
-    u = uint8(0);
-    mu = uint8(0);
-    mu_sign = uint8(0);
+    t = const.init_uint;
+    u = const.init_uint;
+    mu = const.init_uint;
+    mu_sign = const.init_uint;
     % compute t for Z, u for X, mu for phase
     % fprintf('comute inner product mu for x:%s\n', dec2bin(x));
     for i = 1:stab.len
@@ -15,7 +15,7 @@ function inner_product = CH_basis_inner_product(x,stab)
             u = bitxor(u,stab.F(i,1));
             mu = mu + stab.get_g(i);
             mu_sign = mu_sign + parity(bitand(u,stab.M(i,1)));
-            %disp(stab.get_g(i));
+            %disp(stab.get_g(i));s
         end
     end
     mu = mod(mu,4); 

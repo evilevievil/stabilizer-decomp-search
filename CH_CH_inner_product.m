@@ -10,7 +10,7 @@ function inner_product = CH_CH_inner_product(astab,bstab)
     % compute Ucab = (Uca^*)Ucb tableau 
     % Z part
     for i = 1:abstab.len
-        Gab_i = uint8(0);
+        Gab_i = const.init_uint;
         GTa_i = astab.GT(i,1);
         for j = 1:abstab.len
             if bitget(GTa_i,j)
@@ -22,10 +22,10 @@ function inner_product = CH_CH_inner_product(astab,bstab)
     
     % X part  
     for i = 1:abstab.len
-        Fab_i = uint8(0);
-        Mab_i = uint8(0);
+        Fab_i = const.init_uint;
+        Mab_i = const.init_uint;
         mu_i = astab.get_gT(i); % from product of mu_i's
-        mu_i_sign = uint8(0); % from pulling out Z gates
+        mu_i_sign = const.init_uint; % from pulling out Z gates
         FTa_i = astab.FT(i,1);
         MTa_i = astab.MT(i,1);
         for j = 1:abstab.len

@@ -3,6 +3,8 @@
 
 function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step)
     %%%%%%%%%%% init %%%%%%%%%%%
+    %rng(87/89);
+    rng(89);
     vec_len = 2.^len;
     b = b_init; % beta
     step_ratio = (b_final - b_init)/sa_max_step;
@@ -22,12 +24,13 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
     end
 
     %% init stab_decomp
+    %prev_data = load('catT7_4_0.8104.mat');
     for i= 1:decomp_len
         stab_decomp(i) = CH_state(len);
         stab_decomp(i).CH_init('zero');
         stab_decomp(i).CH_init('rand');
+        %stab_decomp(i).deepcopy(prev_data.ans(i));
     end
-    %load('./stab_decomp.mat','stab_decomp');
     %stab_decomp(1).CH_gate('HL',1);
     %stab_decomp(1).CH_gate('CXL',[1,2]);
     %stab_decomp(1).CH_gate('SL',1);
@@ -55,13 +58,13 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
             fprintf('FOUND!!!!\n');
             break; %% found decomp
         %elseif abs(obj_val-1) < 0.000000001
-            disp(obj_val);
+            %disp(obj_val);
         %    fprintf('FOUND!!!!\n');
         %    break; %% found decomp
         elseif new_obj_val > obj_val
             stab_decomp = new_stab_decomp;
             obj_val = new_obj_val;
-            disp(obj_val);
+            %disp(obj_val);
             %for j = 1:decomp_len
             %    fprintf('decomp state %d\n',j);
             %    stab_decomp(j).pp_CH('basis');
@@ -73,7 +76,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
             if accept_pr >= rand() 
                 stab_decomp = new_stab_decomp;
                 obj_val = new_obj_val;
-                disp(obj_val);
+                %disp(obj_val);
                 %for j = 1:decomp_len
                 %    fprintf('decomp state %d\n',j);
                 %    stab_decomp(j).pp_CH('basis');
@@ -156,8 +159,8 @@ function [sign_choice,x_bits,z_bits] = random_pauli_bits(len,proj_num)
     proj_choice = randperm(len,proj_num);
     sign_choice = randi(2,1,1);
     sign_choice = sign_choice-1;
-    x_bits = uint8(0);
-    z_bits = uint8(0);
+    x_bits = const.init_uint;
+    z_bits = const.init_uint;
     for j = 1:proj_num
         bit_loc = proj_choice(j);
         if bit_choice(bit_loc,1) == 1 % I  
