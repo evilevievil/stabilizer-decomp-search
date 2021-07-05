@@ -1,19 +1,8 @@
 %%
-%%  projection_array = CH_decomp_project(a,stab_array,len,decomp_len)                                                        
-%%  computes projection of a onto stabilizers in the decomp, 
-%%  where |a> is arbitrary state, stab_array is array of stabilizers of bit length len
-%%
-function projection = CH_decomp_project(a,stab_array,G,G_inv,a_stab_array,projection,k,len,decomp_len)
-    %G = zeros(decomp_len);
-    %a_stab_array = zeros(1,decomp_len);
+function [projection,G,a_stab_array] = CH_decomp_project_memoize(a,stab_array,G,a_stab_array,k,len,decomp_len)
     a_len = 2.^(len);
     projection = double(0);
-
-    % update projection
-    for j = 1:decomp_len
-        projection = projection - a_stab_array(k) * conj(a_stab_array(j)) * G_inv(k,j);
-        projection = projection - a_stab_array(j) * conj(a_stab_array(k)) * G_inv(j,k);
-    end
+    G_inv = zeros(decomp_len);
 
     % update G array
     for i = 1:decomp_len
@@ -21,23 +10,22 @@ function projection = CH_decomp_project(a,stab_array,G,G_inv,a_stab_array,projec
         G(i,k) = CH_CH_inner_product(stab_array(i),stab_array(k));
         G(k,i) = CH_CH_inner_product(stab_array(k),stab_array(i));
     end
+
+
     % todo: can I optimize this?
-    if abs(det(G)-0) > 0.001
+    if (abs(G(k,k)-0) > 0.001) && (abs(det(G)-0) > 0.001)
         G_inv = inv(G);
         % update basis array
+        a_stab_array(k) = 0;
         for j = 1:a_len
-            % careful! Matlab 1 indexing :(
             a_stab_array(k) = a_stab_array(k)  + conj(a(j)) * CH_basis_inner_product(j-1,stab_array(k));
-            %disp(a_stab_array);
         end
         
-        %disp(a_stab_array);
-        %disp(G);
-
-        % update projection
-        for j = 1:decomp_len
-            projection = projection + a_stab_array(k) * conj(a_stab_array(j)) * G_inv(k,j);
-            projection = projection + a_stab_array(j) * conj(a_stab_array(k)) * G_inv(j,k);
+        % calulate projection
+        for i = 1:decomp_len
+            for j = 1:decomp_len
+                projection = projection + a_stab_array(i) * conj(a_stab_array(j)) * G_inv(i,j);
+            end
         end
     else
         % Gram matrix is singular -> find a better stabilizer decomp

@@ -3,8 +3,9 @@
 %%  computes projection of a onto stabilizers in the decomp, 
 %%  where |a> is arbitrary state, stab_array is array of stabilizers of bit length len
 %%
-function projection = CH_decomp_project(a,stab_array,len,decomp_len)
+function [projection,G,a_stab_array] = CH_decomp_project(a,stab_array,len,decomp_len)
     G = zeros(decomp_len);
+    G_inv = zeros(decomp_len);
     a_len = 2.^(len);
     a_stab_array = zeros(1,decomp_len);
     projection = double(0);
