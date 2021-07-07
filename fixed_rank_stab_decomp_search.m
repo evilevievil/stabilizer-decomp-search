@@ -5,19 +5,20 @@
 function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step)
     %%%%%%%%%%% init %%%%%%%%%%%
     %rng(89);
-    rng(6); % t_5_5
+    %rng(6); % t_5_5 h_6_7
+    rng(876); % h_6_7 pt2
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
     reverse_formatted_a = reverse_format_amp(a,len);
     new_obj_val = 0;
 
     %% init stab_decomp
-    %prev_data = load('catT7_4_0.8104.mat'); % load from saved data
+    prev_data = load('H_6_7_0.9539.mat'); % load from saved data
     for i= 1:decomp_len
         stab_decomp(i) = CH_state(len);
         stab_decomp(i).CH_init('zero');
-        stab_decomp(i).CH_init('rand');
-        %stab_decomp(i).deepcopy(prev_data.ans(i)); % load from saved data
+        %stab_decomp(i).CH_init('rand');
+        stab_decomp(i).deepcopy(prev_data.ans(i)); % load from saved data
     end
     
     [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
@@ -56,6 +57,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                     a_stab_array = new_a_stab_array;
                     disp(new_obj_val);
                 end
+                %disp(new_obj_val);
             end
         end
         %disp(obj_val);
@@ -77,7 +79,8 @@ function [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(rev
     state_choice = 1;
     new_obj_val = -1;
     new_stab_decomp = stab_decomp;
-    while new_obj_val == -1
+    while new_obj_val == -1 || (CH_CH_inner_product(new_stab_decomp(state_choice),stab_decomp(state_choice))==1)
+    %while new_obj_val == -1 
         new_stab_decomp(state_choice) = stab_decomp(state_choice);
         state_choice = randi(decomp_len,1,1);
         [sign_choice,x_bits,z_bits] = random_pauli_bits(len); 

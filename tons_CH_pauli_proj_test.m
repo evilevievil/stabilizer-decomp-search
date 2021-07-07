@@ -1,7 +1,7 @@
 %%
 %%
 %% globals
-len = 8;
+len = 6;
 vec_len = 2.^len;
 bit_X = [0,1;1,0];
 bit_Z = [1,0;0,-1];
@@ -72,5 +72,4 @@ for k=1:100
         assert(approx_equal(state_vector,s_state_vec,0.000000001)); %% may need +- to account for rounding error...
         fprintf('%dth projector passed!\n',i);
     end
-
 end
