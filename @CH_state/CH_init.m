@@ -15,6 +15,7 @@ function CH_init(obj,option)
         obj.w = 1;
     case 'rand' % generate by applying random gates!
         obj.CH_init('zero');
+        obj.s = uint8(randi(obj.len,1,1) - 1);
         for i = 1:30
             obj.CH_gate('rand',[-1,-1]);
         end

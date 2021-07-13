@@ -2,36 +2,49 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of arbitrary state a
 
 %% main search function
-function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step)
+function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,seed)
+    %%%%%%%%%%% graph %%%%%%%%%%%
+    all_x = 1:(100*1000);
+    all_y = zeros(1,100*1000);
+    SA_x = 1:100;
+    SA_y = zeros(1,100);
     %%%%%%%%%%% init %%%%%%%%%%%
-    %rng(89);
-    %rng(6); % t_5_5 h_6_7
+
     rng(876); % h_6_7 pt2
+    rng(988793);
+    %rng(6); % t_5_5 h_6_7
+    %rng(876); % h_6_7 pt2
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
     reverse_formatted_a = reverse_format_amp(a,len);
     new_obj_val = 0;
 
     %% init stab_decomp
-    prev_data = load('H_6_7_0.9539.mat'); % load from saved data
+    %prev_data = load('data/H_6_7.mat'); % load from saved data
     for i= 1:decomp_len
         stab_decomp(i) = CH_state(len);
         stab_decomp(i).CH_init('zero');
-        %stab_decomp(i).CH_init('rand');
-        stab_decomp(i).deepcopy(prev_data.ans(i)); % load from saved data
+        stab_decomp(i).CH_init('rand');
+        %stab_decomp(i).deepcopy(prev_data.ans(i+1)); % load from saved data
     end
-    
+    %rng(89);
     [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
     %% BUG??? check initial states are linearly independent 
     assert(obj_val~=-1);
-
+    
+    %% init cooling schedule
+    %temp_change = [40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,...%16
+    %    500,2400,500];
+    %walk_steps = [1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,...
+    %    1000,1000,1000,   6000,6000,4000 ]; %17
     %%%%%%%%%%% search %%%%%%%%%%%
     fprintf('Search Start!\n');
     disp(obj_val);
     
     % SA cooling loop
     for i = 1:sa_max_step
-
+        fprintf('SA %dth step\n',i);
+        %for j = 1:walk_steps(i)
         for j = 1:walk_max_step
             [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len);
             if abs(new_obj_val-1) < 0.000000001
@@ -59,12 +72,13 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                 end
                 %disp(new_obj_val);
             end
+            all_y(1,walk_max_step*(i-1)+j) = obj_val;
         end
         %disp(obj_val);
-        
         if abs(new_obj_val-1) < 0.000000001
             break;
         end
+        SA_y(1,i) = obj_val;
         b = b + step_ratio;
     end
     disp(obj_val);
@@ -72,6 +86,10 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
         fprintf('decomp state %d\n',j);
         stab_decomp(j).pp_CH('basis');
     end
+    save('all_x.mat','all_x');
+    save('all_y.mat','all_y');
+    save('SA_x.mat','SA_x');
+    save('SA_y.mat','SA_y');
 end
 
 %% 
@@ -92,21 +110,13 @@ end
 %% 
 % todo: generate random number as bit string to optimize
 function [sign_choice,x_bits,z_bits] = random_pauli_bits(len)
-    bit_choice = randi(3,len,1);
+    %bit_choice = randi(3,len,1);
+    bit_max = 2.^len;
     sign_choice = randi(2,1,1);
     sign_choice = sign_choice-1;
-    x_bits = const.init_uint;
-    z_bits = const.init_uint;
-    for j = 1:len
-        if bit_choice(j,1) == 1 % I  
-            continue;
-        elseif bit_choice(j,1) == 2 % X
-            x_bits = bitset(x_bits,j,1);
-        elseif bit_choice(j,1) == 3 % Z
-            z_bits = bitset(z_bits,j,1);
-        else % Y
-            %x_bits = bitset(x_bits,j,1);
-            %z_bits = bitset(z_bits,j,1);
-        end
-    end
+    %x_bits = const.init_uint;
+    %z_bits = const.init_uint;
+    x_bits = uint8(randi(bit_max,1,1) - 1);
+    z_bits = uint8(randi(bit_max,1,1) - 1);
+    %z_bits = bitxor(z_bits,bitand(x_bits,z_bits));
 end
