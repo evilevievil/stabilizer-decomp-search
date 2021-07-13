@@ -2,9 +2,14 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of arbitrary state a
 
 %% main search function
-function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step)
+function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,seed)
+    %%%%%%%%%%% graph %%%%%%%%%%%
+    all_x = 1:(100*1000);
+    all_y = zeros(1,100*1000);
+    SA_x = 1:100;
+    SA_y = zeros(1,100);
     %%%%%%%%%%% init %%%%%%%%%%%
-    rng(609769);
+    rng(988793);
     %rng(6); % t_5_5 h_6_7
     %rng(876); % h_6_7 pt2
     b = b_init; 
@@ -20,18 +25,24 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
         stab_decomp(i).CH_init('rand');
         %stab_decomp(i).deepcopy(prev_data.ans(i+1)); % load from saved data
     end
-    rng(89);
+    %rng(89);
     [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
     %% BUG??? check initial states are linearly independent 
     assert(obj_val~=-1);
-
+    
+    %% init cooling schedule
+    %temp_change = [40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,...%16
+    %    500,2400,500];
+    %walk_steps = [1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,...
+    %    1000,1000,1000,   6000,6000,4000 ]; %17
     %%%%%%%%%%% search %%%%%%%%%%%
     fprintf('Search Start!\n');
     disp(obj_val);
     
     % SA cooling loop
     for i = 1:sa_max_step
-
+        fprintf('SA %dth step\n',i);
+        %for j = 1:walk_steps(i)
         for j = 1:walk_max_step
             [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len);
             if abs(new_obj_val-1) < 0.000000001
@@ -59,12 +70,13 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                 end
                 %disp(new_obj_val);
             end
+            all_y(1,walk_max_step*(i-1)+j) = obj_val;
         end
         %disp(obj_val);
-        
         if abs(new_obj_val-1) < 0.000000001
             break;
         end
+        SA_y(1,i) = obj_val;
         b = b + step_ratio;
     end
     disp(obj_val);
@@ -72,6 +84,10 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
         fprintf('decomp state %d\n',j);
         stab_decomp(j).pp_CH('basis');
     end
+    save('all_x.mat','all_x');
+    save('all_y.mat','all_y');
+    save('SA_x.mat','SA_x');
+    save('SA_y.mat','SA_y');
 end
 
 %% 
