@@ -4,30 +4,34 @@
 %% main search function
 function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,seed)
     %%%%%%%%%%% graph %%%%%%%%%%%
-    all_x = 1:(100*1000);
-    all_y = zeros(1,100*1000);
-    SA_x = 1:100;
-    SA_y = zeros(1,100);
+    search_status = 0;
+  %  all_x = 1:(50*1000);
+  %  all_y = zeros(1,50*1000);
+  %  SA_x = 1:50;
+  %  SA_y = zeros(1,50);
     %%%%%%%%%%% init %%%%%%%%%%%
 
-    rng(876); % h_6_7 pt2
-    rng(988793);
-    %rng(6); % t_5_5 h_6_7
     %rng(876); % h_6_7 pt2
+    %rng(987902);
+    %rng(89);
+    rng(8); % t_5_5 h_6_7
+    %rng(89); % h_6_7 pt2
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
+    %step_ratio = b_final.^(1/sa_max_step);
     reverse_formatted_a = reverse_format_amp(a,len);
     new_obj_val = 0;
 
     %% init stab_decomp
-    %prev_data = load('data/H_6_7.mat'); % load from saved data
+    %prev_data = load('catT_8_5_0.9133.mat'); % load from saved data
+    %prev_data = prev_data.stab_decomp;
     for i= 1:decomp_len
         stab_decomp(i) = CH_state(len);
         stab_decomp(i).CH_init('zero');
         stab_decomp(i).CH_init('rand');
-        %stab_decomp(i).deepcopy(prev_data.ans(i+1)); % load from saved data
+        %stab_decomp(i).deepcopy(prev_data.stab_decomp(i)); % load from saved data
     end
-    %rng(89);
+    %rng(988793);
     [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
     %% BUG??? check initial states are linearly independent 
     assert(obj_val~=-1);
@@ -39,7 +43,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
     %    1000,1000,1000,   6000,6000,4000 ]; %17
     %%%%%%%%%%% search %%%%%%%%%%%
     fprintf('Search Start!\n');
-    disp(obj_val);
+ %   disp(obj_val);
     
     % SA cooling loop
     for i = 1:sa_max_step
@@ -53,6 +57,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                 G = new_G;
                 a_stab_array = new_a_stab_array;
                 disp(obj_val);
+                search_status = 1;
                 fprintf('FOUND!!!!\n');
                 break; 
             elseif new_obj_val > obj_val
@@ -72,13 +77,13 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                 end
                 %disp(new_obj_val);
             end
-            all_y(1,walk_max_step*(i-1)+j) = obj_val;
+  %          all_y(1,walk_max_step*(i-1)+j) = obj_val;
         end
         %disp(obj_val);
         if abs(new_obj_val-1) < 0.000000001
             break;
         end
-        SA_y(1,i) = obj_val;
+  %      SA_y(1,i) = obj_val;
         b = b + step_ratio;
     end
     disp(obj_val);
@@ -86,10 +91,10 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
         fprintf('decomp state %d\n',j);
         stab_decomp(j).pp_CH('basis');
     end
-    save('all_x.mat','all_x');
-    save('all_y.mat','all_y');
-    save('SA_x.mat','SA_x');
-    save('SA_y.mat','SA_y');
+ %   save('all_x.mat','all_x');
+ %   save('all_y.mat','all_y');
+ %   save('SA_x.mat','SA_x');
+ %   save('SA_y.mat','SA_y');
 end
 
 %% 
