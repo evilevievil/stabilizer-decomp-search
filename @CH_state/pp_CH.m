@@ -2,7 +2,6 @@
 %% state.pp_CH(option)
 %%
 function pp_CH(obj,option)
-    % todo: helper to remove duplicate code for F,G,M
     F = dec2bin(obj.F);
     G = dec2bin(obj.G);
     M = dec2bin(obj.M);

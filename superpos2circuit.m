@@ -3,15 +3,11 @@
 %%  absorb superpoisition state (assumes t!=u) into circuit and mutates stab
 %%  (see prop'n 4 from "Simulation of qc by low-rank stab decomp" paper)
 %% 
-
 function superpos2circuit(t,u,a,d,stab)
-    % step 2: compute strings y,z (differ by one bit q), string v0,v1 representing Vc
+    % compute strings y,z (differ by one bit q), string v0,v1 representing Vc
     t_oxr_u = bitxor(t,u);
-    %fprintf('t_oxr_u:');disp(dec2bin(t_oxr_u));
     v0 = bitand(t_oxr_u,bitcmp(stab.v));
-    %fprintf('v0:');disp(dec2bin(v0));
     v1 = bitand(t_oxr_u,stab.v);
-    %fprintf('v1:');disp(dec2bin(v1));
     q = 1;
 
     if v0
@@ -26,20 +22,17 @@ function superpos2circuit(t,u,a,d,stab)
         fprintf('error CH_HL: v0 and v1 cannot both be 0.\n');
     end
     v_q = bitget(stab.v,q);
-    %fprintf('vq:');disp(dec2bin(v_q));
 
     % update Uc = UcVc
     if bitsum(t_oxr_u) > 1
         if v0 
             for pos = 1:stab.len
                 if bitget(v0,pos) && (pos ~= q)
-                    %fprintf('curr v0 pos:');disp(pos);
                     stab.CH_gate('CXR',[q,pos]);
                 end
             end
             for pos = 1:stab.len
                 if bitget(v1,pos)
-                    %fprintf('curr v1 pos:');disp(pos);
                     stab.CH_gate('CZR',[q,pos]);
                 end
             end
@@ -56,20 +49,18 @@ function superpos2circuit(t,u,a,d,stab)
 
     if bitget(t,q)
         y = bitxor(u,bitset(const.init_uint,q));
-        %fprintf('y:');disp(dec2bin(y));
     else
         y = t;
-        %fprintf('y:');disp(dec2bin(y));
     end
 
-% step 3: compute w_0, s_a, h_b, c and update w, Uc, Uh accordingly
+    % compute w_0, s_a, h_b, c and update w, Uc, Uh accordingly
     y_q =  bitget(y,q);
-    %fprintf('y_q:');disp(dec2bin(y_q));
     s_a = const.init_uint; 
     h_b = const.init_uint;
     c = const.init_uint;
     w_w = double(1);
-
+    
+    % todo: can simplify case analysis
     if ~v_q
         if ~y_q
             if d == 0

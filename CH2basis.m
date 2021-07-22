@@ -3,7 +3,7 @@ function basis_vector = CH2basis(stab)
     basis_vector = zeros(vec_len,1);
     for i = 1:vec_len
         %% matlab 1 indexing!! :(
-        %% reverse bit string due right most convention
+        %% reverse bit string due right most convention (inverse of reverse_format_amp)
         diff_len = stab.len - strlength(dec2bin(i-1));
         i_strrev = reverse(dec2bin(i-1));
         for j = 1: diff_len

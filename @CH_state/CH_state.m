@@ -1,34 +1,33 @@
 %%
-%% class definition for len-qubit stabilizer state in CH-form
+%% class definition for stabilizer state in CH-form
 %%
 classdef CH_state < handle
     properties
-        % todo: max 8 qubits for now. make global param/improve readability later
-        % todo: make functions more robust by asserting unuused bit equal 0
-        % all matrices are filled starting from top right (0,0) position
+        % caveat: all matrices are filled starting from top right (0,0) position
+
         % length/number of qubits of state
         len (1,1) int32 
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (X part)
-        F (16,1) uint16 = zeros(16,1)
+        F = const.init_tableau(:,:)
         % len x len bit matrix storing Uc^*ZpUc stabilizer tableau
-        G (16,1) uint16 = zeros(16,1)
+        G = const.init_tableau(:,:)
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (Z part)
-        M (16,1) uint16 = zeros(16,1)
+        M = const.init_tableau(:,:)
         % 2-bit x len array storing phase for Uc^*XpUc stabilizer tableau (phase part)
-        g (1,1) uint32 = 0
+        g (1,1) = const.init_duint
         % len bit array storing Uh
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (X part)
-        FT (16,1) uint16 = zeros(16,1)
+        FT = const.init_tableau(:,:)
         % len x len bit matrix storing UcZpUc^* stabilizer tableau
-        GT (16,1) uint16 = zeros(16,1)
+        GT = const.init_tableau(:,:)
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (Z part)
-        MT (16,1) uint16 = zeros(16,1)
+        MT = const.init_tableau(:,:)
         % 2-bit x len array storing phase for UcXpUc^* stabilizer tableau (phase part)
-        gT (1,1) uint32 = 0
+        gT (1,1) = const.init_duint
         % len bit array storing Uh
-        v (1,1) uint16 = 0
+        v (1,1) = const.init_uint
         % len bit array storing |s>
-        s (1,1) uint16 = 0
+        s (1,1) = const.init_uint
         % global phase on state
         w (1,1) double = 0
     end
@@ -80,9 +79,8 @@ classdef CH_state < handle
  
         % CH_state property get and set
         % not required as properties are public, but this abstracts out bit ops and simplifies refactoring
-        % getter
-        % todo: make inline/anaonymous functions to boost performance 
- 
+
+        %getter
         function F_ij = get_F(obj,i,j) 
             F_ij = bitget(obj.F(i,1),j);
         end
@@ -96,9 +94,11 @@ classdef CH_state < handle
         end
  
         function g_i = get_g(obj,i) 
-            g_i1 = uint16(bitget(obj.g,2*i-1));
-            g_i2 = bitshift(uint16(bitget(obj.g,2*i)),1);
+            g_i1 = bitget(obj.g,2*i-1);
+            g_i2 = bitshift(bitget(obj.g,2*i),1);
             g_i = bitxor(g_i1,g_i2);
+            g_i = cast(g_i,'like',const.init_uint);
+
         end
 
         function FT_ij = get_FT(obj,i,j) 
@@ -114,9 +114,10 @@ classdef CH_state < handle
         end
  
         function gT_i = get_gT(obj,i) 
-            gT_i1 = uint16(bitget(obj.gT,2*i-1));
-            gT_i2 = bitshift(uint16(bitget(obj.gT,2*i)),1);
+            gT_i1 = bitget(obj.gT,2*i-1);
+            gT_i2 = bitshift(bitget(obj.gT,2*i),1);
             gT_i = bitxor(gT_i1,gT_i2);
+            gT_i = cast(gT_i,'like',const.init_uint);
         end
  
         function v_i = get_v(obj,i) 

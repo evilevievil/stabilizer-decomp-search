@@ -12,12 +12,11 @@ function [projection,G,a_stab_array] = CH_decomp_project(a,stab_array,len,decomp
 
     % compute G array
     for i = 1:decomp_len
-        % todo: just use conjugate for lower triangular
         for j=1:decomp_len
             G(i,j) = CH_CH_inner_product(stab_array(i),stab_array(j));
         end
     end
-    % todo: can I optimize this?
+
     if abs(det(G)-0) > 0.001
         G_inv = inv(G);
         % compute basis array
@@ -25,12 +24,8 @@ function [projection,G,a_stab_array] = CH_decomp_project(a,stab_array,len,decomp
             for j = 1:a_len
                 % careful! Matlab 1 indexing :(
                 a_stab_array(i) = a_stab_array(i)  + conj(a(j)) * CH_basis_inner_product(j-1,stab_array(i));
-                %disp(a_stab_array);
             end
         end
-        
-        %disp(a_stab_array);
-        %disp(G);
 
         % compute projection
         for i = 1:decomp_len
@@ -38,8 +33,7 @@ function [projection,G,a_stab_array] = CH_decomp_project(a,stab_array,len,decomp
                 projection = projection + a_stab_array(i) * conj(a_stab_array(j)) * G_inv(i,j);
             end
         end
-    else
-        % Gram matrix is singular -> find a better stabilizer decomp
+    else % Gram matrix is singular -> find a better stabilizer decomp
         projection = -1;
     end
 end

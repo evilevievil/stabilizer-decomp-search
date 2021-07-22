@@ -1,3 +1,5 @@
+%% sorts user input amplitude array into reversed bit string order
+%% caveat: CH_state indexes bits from right to left, reverse_format_amp 
 function reverse_formatted_a = reverse_format_amp(a,len)
     vec_len = 2.^len;
     reverse_formatted_a = zeros(vec_len,1);

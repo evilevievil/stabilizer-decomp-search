@@ -1,8 +1,10 @@
-%% attempt to typedef without Simulink
+%% typedef without Simulink
 classdef const
     properties (Constant)
-        %% bit array init
+        typecast_str = 'uint16';
         init_uint uint16 = 0;
-        %% 1 qubit gates matrix
+        init_duint uint32 = 0;
+        init_tableau (16,1) uint16 = zeros(const.init_max_qubits,1);
+        init_max_qubits = 16;
     end
 end

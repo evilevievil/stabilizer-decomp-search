@@ -2,8 +2,8 @@
 %%  inner_product = CH_CH_inner_product(astab,bstab)                                                        
 %%  computes inner product <astab|bstab>, where |astab>,|bstab> are stabilizer states of same bit length
 %%
-% computing sign bit is slow..
 function inner_product = CH_CH_inner_product(astab,bstab)
+    % deepcopy of bstab, so we don't mutate astab or bstab
     abstab = CH_state(bstab.len);
     abstab.deepcopy(bstab);
     
@@ -48,10 +48,6 @@ function inner_product = CH_CH_inner_product(astab,bstab)
         abstab.set_g(i,mu_i);
     end
     abstab.w = abstab.w * conj(astab.w);
-
-    %fprintf('abstab print:\n');
-    %abstab.pp_CH('ch');
-    %abstab.pp_CH('basis');
 
     % apply Uha 
     for i = 1:abstab.len

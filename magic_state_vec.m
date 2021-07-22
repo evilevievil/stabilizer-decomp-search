@@ -1,3 +1,4 @@
+%% magic_state_vec computes state vector array for len qubit magic_state given type 
 function magic_state = magic_state_vec(type, len)
     bit_T = [2.^-0.5; 0.5*(1+1i)];
     bit_H = [cos(pi/8); sin(pi/8)];

@@ -1,10 +1,8 @@
 %%
-%%  stab_new = stab.CH_gate(g,q)
+%%  stab_new = stab.CH_gate(g,q) 
+%%  applies gate to mutate stab; return mutated stab
 %%                                             
 function stab_new = CH_gate(obj,g,param)
-    % todo: makes shallow copy for now and mutates original state; 
-    % todo: make class methods void functions: mutation->void ; no mutation->return new resulting state
-    % may want to deepcopy depending on the search algorithm (shallowcopy sufficient for SA)
     switch g
     case 'SL'
         stab_new = CH_SL(param,obj);
@@ -26,17 +24,17 @@ function stab_new = CH_gate(obj,g,param)
         stab_new = CH_HL(param,obj);
     case 'rand'
         gate_choice = randi(6,1,1);
-        if gate_choice == 1  %SLs
+        if gate_choice == 1  
             bit_choice = randi(obj.len,1,1);
             obj.CH_gate('SL',bit_choice);
-        elseif gate_choice == 2  %HL
+        elseif gate_choice == 2  
             bit_choice = randi(obj.len,1,1);
             obj.CH_gate('HL',bit_choice);
-        elseif gate_choice == 3 || gate_choice == 4 %CXL
-            bit_choice = randperm(obj.len,2); % use 1st as control and 2nd as result
+        elseif gate_choice == 3 || gate_choice == 4 
+            bit_choice = randperm(obj.len,2); % bit_choice(1) control, bit_choice(2) result
             obj.CH_gate('CXL',bit_choice);
-        elseif gate_choice == 5 || gate_choice == 6 %CZL
-            bit_choice = randperm(obj.len,2); % use 1st as control and 2nd as result
+        elseif gate_choice == 5 || gate_choice == 6 
+            bit_choice = randperm(obj.len,2); % bit_choice(1) control, bit_choice(2) result
             obj.CH_gate('CZL',bit_choice);
         else
             fprintf('error invalid gate choice.\n');
@@ -58,7 +56,6 @@ function stab_new = CH_SL(param,stab)
     % conjugate
     for p = 1:stab.len
         stab.set_MT(p,q,bitxor(stab.get_MT(p,q),stab.get_FT(p,q)));
-        % todo: optimize bit ops
         if stab.get_FT(p,q)
             new_gTp = stab.get_gT(p);
             %fprintf('p=%d, old new_gTp:%d bit1=%d,bit2=%d\n',p,new_gTp,bitget(new_gTp,1),bitget(new_gTp,2));
@@ -96,7 +93,6 @@ function stab_new = CH_CXL(param,stab)
     %fprintf('g_q:%d, g_r:%d\n, g_q+g_r:%d\n',stab.get_g(q),stab.get_g(r),mod(stab.get_g(q)+stab.get_g(r),4));
     stab.set_g(q,mod(stab.get_g(q)+stab.get_g(r),4));
     %fprintf('new g_q: %d\n',stab.get_g(q));
-    % todo: optimize bit ops
     if parity(bitand(stab.M(q),stab.F(r)))
         new_gq = stab.get_g(q);
         new_gq = bitset(new_gq,2,~bitget(new_gq,2));
@@ -122,7 +118,6 @@ function stab_new = CH_SR(param,stab)
     q = param(1);
     for p = 1:stab.len
         stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_F(p,q)));
-        % todo: optimize bit ops
         if stab.get_F(p,q)
             new_gp = stab.get_g(p);
             new_gp = bitset(stab.get_g(p),2,~bitxor(bitget(new_gp,1),bitget(new_gp,2)));
@@ -145,7 +140,6 @@ function stab_new = CH_CZR(param,stab)
     for p = 1:stab.len
         stab.set_M(p,q,bitxor(stab.get_M(p,q),stab.get_F(p,r)));
         stab.set_M(p,r,bitxor(stab.get_M(p,r),stab.get_F(p,q)));
-        % todo: optimize bit ops
         if stab.get_F(p,q) && stab.get_F(p,r)
             new_gp = stab.get_g(p);
             new_gp = bitset(new_gp,2,~bitget(new_gp,2));

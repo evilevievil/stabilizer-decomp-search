@@ -1,5 +1,6 @@
 %%
 %%  stab_new = stab.CH_pauli_proj(g,q)
+%%  makes deepcopy of stab called stab_new and pauli proj on stab_new
 %%               
 function stab_new = CH_pauli_proj(obj,neg,x_bit,z_bit)
 
@@ -9,10 +10,11 @@ function stab_new = CH_pauli_proj(obj,neg,x_bit,z_bit)
     t = obj.s;
     u = obj.s; 
     a = const.init_uint;
-    d = mod(bitsum(bitand(x_bit,z_bit)),4); % imaginary part from Y's
+    d = mod(bitsum(bitand(x_bit,z_bit)),4); % i^d part from Y's
     if neg
-        d = bitset(d,2,~bitget(d,2));  % sign from choice of pauli
+        d = bitset(d,2,~bitget(d,2));  % pauli projector sign
     end
+
     % Z part
     new_zz_bit = const.init_uint;
     for j = 1:obj.len
@@ -20,7 +22,6 @@ function stab_new = CH_pauli_proj(obj,neg,x_bit,z_bit)
             new_zz_bit = bitxor(new_zz_bit,obj.G(j,1));
         end
     end
-
 
     % X part  
     new_x_bit = const.init_uint;
@@ -43,10 +44,10 @@ function stab_new = CH_pauli_proj(obj,neg,x_bit,z_bit)
     z_bit = bitxor(new_zz_bit,new_xz_bit);
 
     % H part
-    %second layer
+    % first layer
     ZqL = bitand(x_bit,stab_new.v);
     XqR = bitand(z_bit,stab_new.v);
-    % first layer
+    % second layer
     ZqR = bitxor(XqR,z_bit);
     XqL = bitxor(ZqL,x_bit);
 
@@ -59,21 +60,16 @@ function stab_new = CH_pauli_proj(obj,neg,x_bit,z_bit)
     if neg
         d = bitset(d,2,~bitget(d,2));
     end
-    %fprintf('neg\n');
-    %disp(neg);
-    %fprintf('d\n');
-    %disp(d);
 
     if t ~= u
-        % todo: refactor superpos2circuit to take 2.^(0.5) out 
+        %caveat: superpos2circuit assumes 2.^(0.5) factor
         superpos2circuit(t,u,a,d,stab_new);
         stab_new.w = 0.5 * stab_new.w * 2.^(0.5);
-        %fprintf('here1\n');
     else
         stab_new.w = stab_new.w * 0.5 * (1+(1i).^double(d));
-        %fprintf('here2, w\n');
-        %disp(stab_new.w);
     end
+
+    % normalize after projection
     if stab_new.w ~= 0
         stab_new.w = stab_new.w/norm(stab_new.w);
     end
