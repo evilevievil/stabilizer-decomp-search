@@ -9,26 +9,26 @@ classdef CH_state < handle
         % length/number of qubits of state
         len (1,1) int32 
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (X part)
-        F (8,1) uint8 = zeros(8,1)
+        F (16,1) uint16 = zeros(16,1)
         % len x len bit matrix storing Uc^*ZpUc stabilizer tableau
-        G (8,1) uint8 = zeros(8,1)
+        G (16,1) uint16 = zeros(16,1)
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (Z part)
-        M (8,1) uint8 = zeros(8,1)
+        M (16,1) uint16 = zeros(16,1)
         % 2-bit x len array storing phase for Uc^*XpUc stabilizer tableau (phase part)
-        g (1,1) uint16 = 0
+        g (1,1) uint32 = 0
         % len bit array storing Uh
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (X part)
-        FT (8,1) uint8 = zeros(8,1)
+        FT (16,1) uint16 = zeros(16,1)
         % len x len bit matrix storing UcZpUc^* stabilizer tableau
-        GT (8,1) uint8 = zeros(8,1)
+        GT (16,1) uint16 = zeros(16,1)
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (Z part)
-        MT (8,1) uint8 = zeros(8,1)
+        MT (16,1) uint16 = zeros(16,1)
         % 2-bit x len array storing phase for UcXpUc^* stabilizer tableau (phase part)
-        gT (1,1) uint16 = 0
+        gT (1,1) uint32 = 0
         % len bit array storing Uh
-        v (1,1) uint8 = 0
+        v (1,1) uint16 = 0
         % len bit array storing |s>
-        s (1,1) uint8 = 0
+        s (1,1) uint16 = 0
         % global phase on state
         w (1,1) double = 0
     end
@@ -96,8 +96,8 @@ classdef CH_state < handle
         end
  
         function g_i = get_g(obj,i) 
-            g_i1 = uint8(bitget(obj.g,2*i-1));
-            g_i2 = bitshift(uint8(bitget(obj.g,2*i)),1);
+            g_i1 = uint16(bitget(obj.g,2*i-1));
+            g_i2 = bitshift(uint16(bitget(obj.g,2*i)),1);
             g_i = bitxor(g_i1,g_i2);
         end
 
@@ -114,8 +114,8 @@ classdef CH_state < handle
         end
  
         function gT_i = get_gT(obj,i) 
-            gT_i1 = uint8(bitget(obj.gT,2*i-1));
-            gT_i2 = bitshift(uint8(bitget(obj.gT,2*i)),1);
+            gT_i1 = uint16(bitget(obj.gT,2*i-1));
+            gT_i2 = bitshift(uint16(bitget(obj.gT,2*i)),1);
             gT_i = bitxor(gT_i1,gT_i2);
         end
  

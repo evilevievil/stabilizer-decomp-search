@@ -1,7 +1,7 @@
 %%
 %%
 %% globals
-len = 2;
+len = 9;
 vec_len = 2.^len;
 num_gates = 1000;
 bit_H = 2.^(-0.5)*[1,1;1,-1];

@@ -2,7 +2,7 @@
 classdef const
     properties (Constant)
         %% bit array init
-        init_uint uint8 = 0;
+        init_uint uint16 = 0;
         %% 1 qubit gates matrix
     end
 end

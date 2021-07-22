@@ -14,7 +14,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
     %rng(876); % h_6_7 pt2
     %rng(987902);
     %rng(89);
-    rng(8); % t_5_5 h_6_7
+    rng(4); % t_5_5 h_6_7
     %rng(89); % h_6_7 pt2
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
@@ -121,7 +121,7 @@ function [sign_choice,x_bits,z_bits] = random_pauli_bits(len)
     sign_choice = sign_choice-1;
     %x_bits = const.init_uint;
     %z_bits = const.init_uint;
-    x_bits = uint8(randi(bit_max,1,1) - 1);
-    z_bits = uint8(randi(bit_max,1,1) - 1);
+    x_bits = uint16(randi(bit_max,1,1) - 1);
+    z_bits = uint16(randi(bit_max,1,1) - 1);
     %z_bits = bitxor(z_bits,bitand(x_bits,z_bits));
 end
