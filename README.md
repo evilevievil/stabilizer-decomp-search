@@ -48,13 +48,13 @@ CH_basis_inner_product(basis state as integer,stab)
 ```c
 CH_CH_inner_product(stab_state1,stab_state2)
 ```
-7. pretty print state \
+7. pretty print state 
 ```c
 %% print CH-form 
 state.pp_CH('ch') 
 %% print conjugate state's CH-form 
 state.pp_CH('conj') 
-%% print as state vector, uses regular (not reversed) bit string convention for your convenience \
+%% print as state vector, uses regular (not reversed) bit string convention for your convenience 
 state.pp_CH('basis') 
 ```
 8. compute projection onto a stab decomp \
