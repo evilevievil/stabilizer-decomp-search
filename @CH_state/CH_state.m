@@ -8,20 +8,20 @@ classdef CH_state < handle
         % length/number of qubits of state
         len (1,1) int32 
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (X part)
-        F = const.init_tableau(:,:)
+        F = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % len x len bit matrix storing Uc^*ZpUc stabilizer tableau
-        G = const.init_tableau(:,:)
+        G = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % len x len bit matrix storing Uc^*XpUc stabilizer tableau (Z part)
-        M = const.init_tableau(:,:)
+        M = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % 2-bit x len array storing phase for Uc^*XpUc stabilizer tableau (phase part)
         g (1,1) = const.init_duint
         % len bit array storing Uh
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (X part)
-        FT = const.init_tableau(:,:)
+        FT = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % len x len bit matrix storing UcZpUc^* stabilizer tableau
-        GT = const.init_tableau(:,:)
+        GT = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % len x len bit matrix storing UcXpUc^* stabilizer tableau (Z part)
-        MT = const.init_tableau(:,:)
+        MT = cast(zeros(const.init_max_qubits,1),const.typecast_str)
         % 2-bit x len array storing phase for UcXpUc^* stabilizer tableau (phase part)
         gT (1,1) = const.init_duint
         % len bit array storing Uh
