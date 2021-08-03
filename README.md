@@ -29,8 +29,8 @@ stab.CH_gate('type_of_gate', target_qubits)
 % type_of_gate = {'CXL','CXR','CZL','CZR','HL','SL','SR'}
 % target_qubits = {[control_bit,target_bit],[trarget_bit,dont_care]}
 ```
-4. apply pauli projector 
-*** CAVEAT: the function normalizes the result for you; no need to renormalize \
+4. apply pauli projector: \
+*** CAVEAT: the function normalizes the result for you; no need to renormalize 
 ```c
 stab.CH_pauli_proj(is_neg,x_bit,z_bit)
 % is_neg = positive->0 ; negative->1
@@ -48,25 +48,25 @@ CH_basis_inner_product(basis state as integer,stab)
 ```c
 CH_CH_inner_product(stab_state1,stab_state2)
 ```
-7. pretty print state \
+7. pretty print state: 
 ```c
 %% print CH-form 
 state.pp_CH('ch') 
 %% print conjugate state's CH-form 
 state.pp_CH('conj') 
-%% print as state vector, uses regular (not reversed) bit string convention for your convenience \
+%% print as state vector, uses regular (not reversed) bit string convention for your convenience 
 state.pp_CH('basis') 
 ```
-8. compute projection onto a stab decomp \
+8. compute projection onto a stab decomp: \
 *** CAVEAT: base case for its memoized version 'CH_decomp_project_memoize' 
 ```c
 [projection,memoize_G,memoize_target_inner_prod] = CH_decomp_project(target_state_vec,stab_decomp,#qubit,decomp_len)
 ```
-9. search for stabilizer decomposition given target_state and target_rank
+9. search for stabilizer decomposition given target_state and target_rank:
 ```c
 fixed_rank_stab_decomp_search(target_state,#qubits,target_rank,init_temp_inverse,final_temp_inverse,max_SA_steps,rand_walk_steps)
 ```
-10. make state vector for magic state
+10. make state vector for magic state:
 ```c
 state_vec = magic_state_vec(type_of_magic, #qubits)
 % type_of_magic = {'T', 'H', 'catT'}
