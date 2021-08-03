@@ -15,7 +15,7 @@ function CH_init(obj,option)
         obj.CH_init('zero');
         bit_max = 2.^(obj.len);
         obj.s = cast(randi(bit_max,1,1) - 1,'like',const.init_uint);
-        for i = 1:30
+        for i = 1:100
             obj.CH_gate('rand',[-1,-1]);
         end
     otherwise

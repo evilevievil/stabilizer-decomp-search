@@ -14,9 +14,11 @@
 %fixed_rank_stab_decomp_search(a,6,7,1,300,100,1000); % H_6_7_0.9539 pt1
 %H_6_7_0.9539 pt2 -> 0.9898 4000
 %% current
-a = magic_state_vec('T',6);
-%fixed_rank_stab_decomp_search(a,6,7,1,4000,100,1000); % H_6_7_0.9539 pt2 -> 0.9898
-fixed_rank_stab_decomp_search(a,6,6,200,3000,100,2000); % H_6_7_0.9539 pt2 -> 0.9898
+%a = magic_state_vec('T',6);
+%a = magic_state_vec('r_1_3',8);
+%b = magic_state_vec('catT',6);
+%a = kron(b,b);
+%fixed_rank_stab_decomp_search(a,8,2,200,3000,100,2000); % H_6_7_0.9539 pt2 -> 0.9898
 
 % a = magic_state_vec('H',6);
 % rng(89);  
@@ -25,7 +27,7 @@ fixed_rank_stab_decomp_search(a,6,6,200,3000,100,2000); % H_6_7_0.9539 pt2 -> 0.
 %   fixed_rank_stab_decomp_search(a,6,7,1,4000,200,100,seed);
 % end
 
-
+magic_code_decomp_search(8,5,200,3000,100,1000,10,1)
 
 
 
