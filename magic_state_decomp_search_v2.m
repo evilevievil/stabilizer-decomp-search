@@ -2,28 +2,29 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of target state a
 
 %% main search function
-function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,seed)
-    %%%%%%%%%%% log graph data %%%%%%%%%%%
-    %search_status = 0;
-    %all_x = 1:(50*1000);
-    %all_y = zeros(1,50*1000);
-    %SA_x = 1:50;
-    %SA_y = zeros(1,50);
+function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idle_steps,seed)
 
     %%%%%%%%%%% init %%%%%%%%%%%
     rng(1); 
+    a = magic_state_vec('T',len);
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
     reverse_formatted_a = reverse_format_amp(a,len);
     new_obj_val = 0;
+    idle_step = 0;
+    gen_array = zeros(len,1);
+    gen_array = cast(gen_array,const.typecast_str);
+    leading_bits = cast(0,const.typecast_str);
+    target_obj_val = 1;
+    k = 0;
 
     %% init stab_decomp
-    prev_data = load('12_gen_cat_0.51.mat'); % load from saved data
+    %prev_data = load('catT_8_5_0.9133.mat'); % load from saved data
     for i= 1:decomp_len
         stab_decomp(i) = CH_state(len);
         stab_decomp(i).CH_init('zero');
-        %stab_decomp(i).CH_init('rand');
-        stab_decomp(i).deepcopy(prev_data.ans(i)); % load from saved data
+        stab_decomp(i).CH_init('rand');
+        %stab_decomp(i).deepcopy(prev_data.stab_decomp(i)); % load from saved data
     end
 
     [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
@@ -37,16 +38,16 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
     % SA cooling loop
     for i = 1:sa_max_step
         fprintf('SA %dth step\n',i);
-        %for j = 1:walk_steps(i)
+        idle_walk = 1;
         for j = 1:walk_max_step
-            [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len);
-            if abs(new_obj_val-1) < 0.000000001 % account for rounding error
+            [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len,gen_array,leading_bits);
+            if abs(new_obj_val-target_obj_val) < 0.000000001 % account for rounding error
                 stab_decomp = new_stab_decomp; 
                 obj_val = new_obj_val;
                 G = new_G;
                 a_stab_array = new_a_stab_array;
+                idle_walk = 0;
                 disp(obj_val);
-                % search_status = 1; for plot data
                 fprintf('FOUND!!!!\n');
                 break; 
             elseif new_obj_val > obj_val
@@ -54,6 +55,7 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                 obj_val = new_obj_val;
                 G = new_G;
                 a_stab_array = new_a_stab_array;
+                idle_walk = 0;
                 disp(new_obj_val);
             else
                 accept_pr = exp(-b*(obj_val-new_obj_val));
@@ -65,13 +67,26 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
                     disp(new_obj_val);
                 end
             end
-            %all_y(1,walk_max_step*(i-1)+j) = obj_val; % log graph data
         end
 
         if abs(new_obj_val-1) < 0.000000001
             break;
         end
-        %SA_y(1,i) = obj_val; % log graph data
+        
+        %% heuristic for adding generators
+        if idle_walk
+            idle_step = idle_step + 1;
+        else
+            idle_step = 0;
+        end
+
+        if idle_step >= max_idle_steps
+            [a,gen_array,leading_bits] = gen_update(a,len,gen_array,leading_bits);
+            reverse_formatted_a = reverse_format_amp(a,len);
+            [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
+            k = k + 1;
+        end
+
         b = b + step_ratio;
     end
 
@@ -80,21 +95,41 @@ function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_f
         fprintf('decomp state %d\n',j);
         stab_decomp(j).pp_CH('basis');
     end
-    %save('all_x.mat','all_x'); % log graph data
-    %save('all_y.mat','all_y'); % log graph data
-    %save('SA_x.mat','SA_x'); % log graph data
-    %save('SA_y.mat','SA_y'); % log graph data
+end
+
+%% update generator array, objective value and project stab decomp
+function [a,gen_array,leading_bits] = gen_update(a,len,gen_array,leading_bits)
+    new_gen_array = gen_array;
+    new_leading_bits = leading_bits;
+    bit_Z = [1,0;0,-1];
+    bit_I = [1,0;0,1];
+    len_I = tensor_exp(bit_I,len);
+    new_a = zeros(len);
+    while abs(new_a' * new_a) < 0.000000001
+        projector_Z = 1;
+        [new_gen_array,new_leading_bits,new_gen_bits] = add_generator(gen_array,leading_bits,len);
+        for i=1:decomp_len
+            if bitget(new_gen_bits,i)
+                projector_Z = kron(projector_Z,bit_Z);
+            else
+                projector_Z = kron(projector_Z,bit_I);
+            end
+        end
+        new_a = 0.5 * (len_I + projector_Z) * a;
+    end
+    gen_array = new_gen_array;
+    leading_bits = new_leading_bits;
 end
 
 %% perform 1 walk step by updating stab decomp array
-function [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len)
+function [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len,gen_array,leading_bits)
     state_choice = 1;
     new_obj_val = -1;
     new_stab_decomp = stab_decomp;
     while new_obj_val == -1 || (CH_CH_inner_product(new_stab_decomp(state_choice),stab_decomp(state_choice))==1)
         new_stab_decomp(state_choice) = stab_decomp(state_choice);
         state_choice = randi(decomp_len,1,1);
-        [sign_choice,x_bits,z_bits] = random_pauli_bits(len); 
+        [sign_choice,x_bits,z_bits] = random_pauli_bits(gen_array,leading_bits,len); 
         new_stab_decomp(state_choice) = stab_decomp(state_choice).CH_pauli_proj(sign_choice,x_bits,z_bits);
         [new_obj_val,new_G,new_a_stab_array] = CH_decomp_project_memoize(reverse_formatted_a,new_stab_decomp,G,a_stab_array,state_choice,len,decomp_len);
     end

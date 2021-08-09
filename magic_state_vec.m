@@ -3,6 +3,7 @@ function magic_state = magic_state_vec(type, len)
     bit_T = [2.^-0.5; 0.5*(1+1i)];
     bit_H = [cos(pi/8); sin(pi/8)];
     bit_Tt = [2.^-0.5; -0.5*(1+1i)];
+    bit_S_gate = [1,0;0,1i];
     switch type
     case 'T'
         magic_state = tensor_exp(bit_T,len);
@@ -20,6 +21,11 @@ function magic_state = magic_state_vec(type, len)
             magic_state = magic_state + bin2codestate(code_words(i),8);
         end
         magic_state = magic_state/norm(magic_state);
+    case '12gencat'
+        bit_ST = bit_S_gate * bit_T;
+        bit_SST = bit_S_gate * bit_S_gate * bit_T;
+        bit_SSST = bit_S_gate * bit_S_gate * bit_S_gate * bit_T;
+        magic_state = 0.5*(tensor_exp(bit_T,12) + tensor_exp(bit_ST,12) + tensor_exp(bit_SST,12) + tensor_exp(bit_SSST,12));
     end
 end
 

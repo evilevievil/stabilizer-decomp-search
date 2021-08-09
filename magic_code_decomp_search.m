@@ -2,10 +2,11 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of target state a
 
 %% main search function
-function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idel_steps,seed)
+function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idel_steps)
 
     %%%%%%%%%%% init %%%%%%%%%%%
-    rng(1); 
+    rng(0); 
+    max_k = floor(0.5*(len - (4*log2(decomp_len)/log2(3))));
     a = magic_state_vec('T',len);
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
@@ -34,6 +35,7 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
     %%%%%%%%%%% search %%%%%%%%%%%
     fprintf('Search Start!\n');
     disp(obj_val);
+    disp(max_k);
     
     % SA cooling loop
     for i = 1:sa_max_step
@@ -50,7 +52,7 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
                 disp(obj_val);
                 fprintf('FOUND!!!!\n');
                 break; 
-            elseif new_obj_val > obj_val
+            elseif abs(new_obj_val-target_obj_val) < abs(obj_val-target_obj_val) 
                 stab_decomp = new_stab_decomp; 
                 obj_val = new_obj_val;
                 G = new_G;
@@ -69,7 +71,7 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
             end
         end
 
-        if abs(new_obj_val-1) < 0.000000001
+        if abs(new_obj_val-target_obj_val) < 0.000000001
             break;
         end
         
@@ -81,9 +83,13 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
         end
 
         if idle_step >= max_idel_steps
-            target_obj_val = target_obj_val/2;
-            [obj_val,stab_decomp,G,a_stab_array,gen_array,leading_bits] = gen_update(reverse_formatted_a,len,stab_decomp,decomp_len,gen_array,leading_bits,target_obj_val);
-            k = k + 1;
+            if k+1 > max_k
+                max_idel_steps = 100;
+            else
+                target_obj_val = target_obj_val/2;
+                [obj_val,stab_decomp,G,a_stab_array,gen_array,leading_bits] = gen_update(reverse_formatted_a,len,stab_decomp,decomp_len,gen_array,leading_bits,target_obj_val);
+                k = k + 1;
+            end
         end
 
         b = b + step_ratio;
@@ -94,6 +100,8 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
         fprintf('decomp state %d\n',j);
         stab_decomp(j).pp_CH('basis');
     end
+    fprintf('k=%d\n',k);
+    fprintf('max_k=%d\n',max_k);
 end
 
 %% update generator array, objective value and project stab decomp
@@ -103,14 +111,14 @@ function [obj_val,stab_decomp,G,a_stab_array,gen_array,leading_bits] = gen_updat
     new_gen_array = gen_array;
     new_leading_bits = leading_bits;
     x_bits = cast(0,const.typecast_str);
-    while new_obj_val < target_obj_val
+    while new_obj_val < 0
+        disp(new_obj_val);
         [new_gen_array,new_leading_bits,new_gen_bits] = add_generator(gen_array,leading_bits,len);
         for i=1:decomp_len
-            new_stab_decomp(i) = new_stab_decomp(i).CH_pauli_proj(0,x_bits,new_gen_bits);
+            new_stab_decomp(i) = stab_decomp(i).CH_pauli_proj(0,x_bits,new_gen_bits);
         end
         [new_obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,new_stab_decomp,len,decomp_len);
     end
-    obj_val = new_obj_val;
     gen_array = new_gen_array;
     leading_bits = new_leading_bits;
     stab_decomp = new_stab_decomp;
