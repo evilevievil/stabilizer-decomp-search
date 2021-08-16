@@ -2,10 +2,14 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of target state a
 
 %% main search function
-function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idle_steps,seed)
+function [stab_decomp,gen_array,k] = magic_state_decomp_search_v2(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idle_steps,max_k,max_k_iter)
 
     %%%%%%%%%%% init %%%%%%%%%%%
-    rng(1); 
+    rng(265436); 
+    best_so_far = 0;
+    if max_k <0
+       max_k = floor(0.5*(len - (4*log2(decomp_len)/log2(3)))); 
+    end
     a = magic_state_vec('T',len);
     b = b_init; 
     step_ratio = (b_final - b_init)/sa_max_step;
@@ -17,6 +21,7 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
     leading_bits = cast(0,const.typecast_str);
     target_obj_val = 1;
     k = 0;
+    k_iter = 0;
 
     %% init stab_decomp
     %prev_data = load('catT_8_5_0.9133.mat'); % load from saved data
@@ -55,7 +60,10 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
                 obj_val = new_obj_val;
                 G = new_G;
                 a_stab_array = new_a_stab_array;
-                idle_walk = 0;
+                if new_obj_val > best_so_far
+                    best_so_far = new_obj_val;
+                    idle_walk = 0;
+                end
                 disp(new_obj_val);
             else
                 accept_pr = exp(-b*(obj_val-new_obj_val));
@@ -69,7 +77,7 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
             end
         end
 
-        if abs(new_obj_val-1) < 0.000000001
+        if abs(new_obj_val-target_obj_val) < 0.000000001
             break;
         end
         
@@ -81,10 +89,24 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
         end
 
         if idle_step >= max_idle_steps
-            [a,gen_array,leading_bits] = gen_update(a,len,gen_array,leading_bits);
-            reverse_formatted_a = reverse_format_amp(a,len);
-            [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
-            k = k + 1;
+            idle_step = 0;
+            if k+1 > max_k
+                max_idle_steps = 100;
+            elseif k_iter < max_k_iter && k>0
+                [a,gen_array,leading_bits] = generator_search_v2(a,len,gen_array,leading_bits,stab_decomp,decomp_len,0,b,k);
+                reverse_formatted_a = reverse_format_amp(a,len);
+                [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
+                k_iter = k_iter + 1;
+                best_so_far = obj_val;
+            else
+                [a,gen_array,leading_bits] = generator_search_v2(a,len,gen_array,leading_bits,stab_decomp,decomp_len,1,b,k);
+                reverse_formatted_a = reverse_format_amp(a,len);
+                [obj_val,G,a_stab_array] = CH_decomp_project(reverse_formatted_a,stab_decomp,len,decomp_len);
+                target_obj_val = target_obj_val/2;
+                k = k + 1;
+                k_iter = 0;
+                best_so_far = obj_val;
+            end
         end
 
         b = b + step_ratio;
@@ -97,30 +119,6 @@ function [stab_decomp,gen_array,k] = magic_code_decomp_search(len,decomp_len,b_i
     end
 end
 
-%% update generator array, objective value and project stab decomp
-function [a,gen_array,leading_bits] = gen_update(a,len,gen_array,leading_bits)
-    new_gen_array = gen_array;
-    new_leading_bits = leading_bits;
-    bit_Z = [1,0;0,-1];
-    bit_I = [1,0;0,1];
-    len_I = tensor_exp(bit_I,len);
-    new_a = zeros(len);
-    while abs(new_a' * new_a) < 0.000000001
-        projector_Z = 1;
-        [new_gen_array,new_leading_bits,new_gen_bits] = add_generator(gen_array,leading_bits,len);
-        for i=1:decomp_len
-            if bitget(new_gen_bits,i)
-                projector_Z = kron(projector_Z,bit_Z);
-            else
-                projector_Z = kron(projector_Z,bit_I);
-            end
-        end
-        new_a = 0.5 * (len_I + projector_Z) * a;
-    end
-    gen_array = new_gen_array;
-    leading_bits = new_leading_bits;
-end
-
 %% perform 1 walk step by updating stab decomp array
 function [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(reverse_formatted_a,G,a_stab_array,len,stab_decomp,decomp_len,gen_array,leading_bits)
     state_choice = 1;
@@ -129,7 +127,7 @@ function [new_obj_val,new_stab_decomp,new_G,new_a_stab_array] = pauli_update(rev
     while new_obj_val == -1 || (CH_CH_inner_product(new_stab_decomp(state_choice),stab_decomp(state_choice))==1)
         new_stab_decomp(state_choice) = stab_decomp(state_choice);
         state_choice = randi(decomp_len,1,1);
-        [sign_choice,x_bits,z_bits] = random_pauli_bits(gen_array,leading_bits,len); 
+        [sign_choice,x_bits,z_bits] = random_pauli_bits(len); 
         new_stab_decomp(state_choice) = stab_decomp(state_choice).CH_pauli_proj(sign_choice,x_bits,z_bits);
         [new_obj_val,new_G,new_a_stab_array] = CH_decomp_project_memoize(reverse_formatted_a,new_stab_decomp,G,a_stab_array,state_choice,len,decomp_len);
     end

@@ -27,7 +27,10 @@
 %   fixed_rank_stab_decomp_search(a,6,7,1,4000,200,100,seed);
 % end
 
-magic_code_decomp_search(8,3,1,5000,100,1000,2)
+%magic_code_decomp_search(8,3,1,5000,100,1000,2)
+%magic_state_decomp_search_v2(7,3,1,3000,100,1000,2)
+magic_state_decomp_search_v2(6,3,1,2000,100,1000,5,3,3)
+
 
 %a = magic_state_vec('12gencat',12);
 %fixed_rank_stab_decomp_search(a,12,5,5000,5000,100,1000);
