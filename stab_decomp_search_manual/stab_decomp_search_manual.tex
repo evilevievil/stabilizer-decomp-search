@@ -1,0 +1,223 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsthm, amssymb, amsmath, amsfonts, url, enumerate, mathtools, graphics, xcolor}
+\usepackage{abstract}
+\renewcommand{\abstractname}{}    % clear the title
+\renewcommand{\absnamepos}{empty} % originally center
+\newcommand{\blank}[1]{\hspace*{#1}}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{fullpage}
+\usepackage{appendix}
+
+\title{stabilizer-decomp-search User Manual}
+
+\author{
+Eva Feng 
+}
+
+\date{August 2021}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-15pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+This user manual aims to provide installation instructions, system overview and command documentation for the stabilizer-decomp-search package. 
+
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Installation}\label{sec:install}
+
+\subsection{Software Requirements}
+The stabilizer-decomp-search is written completely in Matlab. Please ensure your Matlab version is at least R2021a. Older Matlab versions are likely compatible, but this is not guaranteed. 
+
+\subsection{Getting Your Local Copy}
+To get a copy of the stabilizer-decomp-search package on your local machine, you can either download the package as a zip file or clone the git repository. To do either of these, first go to the github repository:
+
+\begin{verbatim}
+https://github.com/evilevievil/stabilizer-decomp-search
+\end{verbatim}
+
+\paragraph*{Download ZIP}
+1. Click on the green `Code' button. 
+2. Click on `Download ZIP' button in the drop down.
+\begin{figure}
+            \includegraphics[height=0.25\textheight]{download}
+            \caption{Download ZIP}
+\end{figure}
+\paragraph*{Clone Repo}
+See the following github page on how to clone a repo:
+
+\begin{verbatim}
+https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a
+-repository-from-github/cloning-a-repository
+\end{verbatim}
+
+\subsection{Open and Run}
+Open the directory (folder) containing stabilizer-decomp-search in Matlab and add all files and folders to Matlab path. The package is now ready to go!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{System Overview}
+\subsection{File Organization}
+$\setminus$stabilizer-decomp-search (root directory)\\
+ \blank{1cm} $\hookrightarrow \setminus$@CH\_state (CH-form class definition and methods) \\
+ \blank{1cm} $\hookrightarrow \setminus$data (found stabilizer decompositions)\\
+ \blank{1cm} $\hookrightarrow \setminus$unit\_tests (tests for major subroutines)\\
+ \blank{1cm} --- CH utility functions:\\
+ \blank{1cm} $\cdot$ superpos2circuit.m\\
+ \blank{1cm} $\cdot$ CH2basis.m\\
+ \blank{1cm} $\cdot$ CH\_CH\_inner\_product.m\\
+ \blank{1cm} $\cdot$ CH\_basis\_inner\_product.m\\
+ \blank{1cm} --- general utility functions:\\
+ \blank{1cm} $\cdot$ approx.m\\
+ \blank{1cm} $\cdot$ bitsum.m\\
+ \blank{1cm} $\cdot$ const.m\\
+ \blank{1cm} $\cdot$ magic\_state\_vec.m\\
+ \blank{1cm} $\cdot$ parity.m\\
+ \blank{1cm} $\cdot$ tensor\_exp.m\\
+ \blank{1cm} --- objective value functions:\\
+ \blank{1cm} $\cdot$ reverse\_format\_amp.m\\
+ \blank{1cm} $\cdot$ CH\_decomp\_project.m\\
+ \blank{1cm} $\cdot$ CH\_decomp\_project\_memoize.m\\
+ \blank{1cm} --- magic state generator functions:\\
+ \blank{1cm} $\cdot$ add\_generator.m\\
+ \blank{1cm} $\cdot$ get\_commuter.m\\
+ \blank{1cm} $\cdot$ generator\_search\_v2.m\\
+ \blank{1cm} --- search functions:\\
+ \blank{1cm} $\cdot$ fixed\_rank\_stab\_decomp\_search.m\\
+ \blank{1cm} $\cdot$ magic\_code\_decomp\_search.m (WIP)\\
+ \blank{1cm} $\cdot$ magic\_state\_decomp\_search\_v2.m\\
+ \blank{1cm} --- example scripts:\\
+ \blank{1cm} $\cdot$ profile\_time.m\\
+ 
+\subsection{References and Design Decisions}
+\paragraph*{CH-form} We choose to represent all stabilizer states using CH-form because it requires less space and is easier to implement. CH-forms are stored using bit matrices and bit arrays for improved efficiency. The CH-form class and its utility functions are implemented following Section 4.1 in `Simulation of quantum circuits by low-rank stabilizer decompositions
+'. \cite{Bravyi_2019}
+
+\paragraph*{Objective Function Evaluation} The objective function $<\text{target}|\Pi_{\text{stab decomp}}|\text{target}>$ is evaluated using Gram matrix. This conveniently allows us to use memoization for objective function evaluation after each Pauli walk step. 
+
+\paragraph*{Simulated Annealing Search} The simulated annealing search meta-heuristic is implemented following Appendix B in `Trading classical and quantum computational resources' \cite{Bravyi_2016}. The same numerical search was previously implemented in python and C using state vector representation to generate upper bounds in Figure 6 in `Simulation of quantum circuits by low-rank stabilizer decompositions'. Our new Matlab version of the simulated annealing search uses CH-form and is able to reproduce all previous upper bounds.\cite{Bravyi_2016,Bravyi_2019}
+
+\paragraph*{Magic Code State Search} In effort to find lower-rank decompositions, we enhance the simulated annealing search using magic code states proposed in `Improved upper bounds on the stabilizer rank of magic states'. In addition to the original simulated annealing search, the magic code state search also randomly selects generators, corresponding to random magic code states, which can help convert between search spaces to improve stabilizer rank. This enhancement is inspired by low-rank decomposition for the 6-qubit cat state in `Improved upper bounds on the stabilizer rank of magic states' \cite{qassim2021improved}. Currently, the magic code state search does not achieve, but is close to achieving the state-of-art upper bound.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Command Documentation}
+Although the main purpose of this package is to search for low-rank stabilizer decompositions, it also includes several useful standalone classes and functions. This section provides documentation and example commands for these classes and functions.
+
+\subsection{Configuration}
+To configure the max number of qubits, first go to `const.m' and update init\_max\_qubits to 8 or 16 or 32. Then, reopen the stabilizer-decomp-search directory (or simply reopen Matlab) to apply new config globally.
+
+\subsection{Running Unit Tests}
+Unit tests are stored under `unit\_tests' folder. Functions are tested using state vector simulations. To run unit test, simply open the desired test file and click `Run' button in the Matlab console. 
+
+\subsection{CH-form Utilities}
+
+\begin{enumerate}
+  \item Allocate new state in CH-form \\
+ \textbf{ requires}: \#qubits $<=$ init\_max\_qubits.
+  \begin{verbatim}
+      stab = CH_state(#qubits) 
+  \end{verbatim}
+  
+  \item Initialize allocated state\\
+  \textbf{requires}: type\_of\_initialization $\in$ \{`zero' ($|$00..0$>$),`rand' (random stab state)\}.
+  \begin{verbatim}
+     stab.CH_init(`type_of_initialization')
+  \end{verbatim}
+  
+  \item Apply gate\\
+  \textbf{requires}: type\_of\_gate $\in$ \{`CXL' (apply control-X gate from the left),`CXR',`CZL',`CZR',`HL',`SL',`SR'\}.\\
+  \blank{1.6cm}target\_qubits $\in$ \{[control\_bit,target\_bit],[trarget\_bit,dont\_care]\}.
+  \begin{verbatim}
+     stab.CH_gate(`type_of_gate', target_qubits)
+  \end{verbatim}
+  
+  \item Apply Pauli projector \\
+  \textbf{ CAVEAT}: the function normalizes the result for you; no need to renormalize.\\
+  \textbf{requires}: is\_neg = positive$\rightarrow$0 ; negative$\rightarrow$1\\
+  \blank{1.6cm}x\_bit[i] = 0$\rightarrow$I ; 1$\rightarrow$X \\
+  \blank{1.6cm}z\_bit[i] = 0$\rightarrow$I ; 1$\rightarrow$Z. 
+  \begin{verbatim}
+     stab.CH_pauli_proj(is_neg,x_bit,z_bit)
+  \end{verbatim}
+  
+    \item Pretty Printing \\
+  \textbf{requires}: option $\in$ \{`ch' (print CH-form),`conj' (print conjugated tableaux),`basis' (print state vector)\}.
+  \begin{verbatim}
+     state.pp_CH(option) 
+  \end{verbatim}
+  
+\item Compute inner product of standard basis state and stabilizer state\\
+   \textbf{CAVEAT}: Please follow reverse bit string convention for basis state. ie. basis state `1011' should be inputted as `1101' in base 10.
+  \begin{verbatim}
+     CH_basis_inner_product(reversed_basis_state_as_integer,stab)
+  \end{verbatim}  
+
+\item Compute inner product of two stabilizer states\\
+   \textbf{CAVEAT}: The function conjugates $|$stab\_state1$>$ for you: please input $|$stab\_state1$>$, $|$stab\_state2$>$ as is.
+  \begin{verbatim}
+     CH_CH_inner_product(stab_state1,stab_state2)
+  \end{verbatim}    
+  
+\item Compute projection onto a stabilizer decomposition\\
+  \textbf{ CAVEAT}: Serves as base case for its memoized version `CH\_decomp\_project\_memoize'\\
+   \textbf{requires}: type\_state\_vec is the integer representation of reverse bit string.\\
+  \begin{verbatim}
+     [projection,memoize_G,memoize_target_inner_prod] = 
+     CH_decomp_project(target_state_vec,stab_decomp,#qubit,decomp_len)
+  \end{verbatim}      
+  
+\end{enumerate}
+
+\subsection{Stabilizer Decomposition Search}
+
+\begin{enumerate}
+\item Make state vector for magic state\\
+  \textbf{ requires}: type\_of\_magic $\in$ \{`T', `H', `catT',`r\_1\_3',`12gencat'\}. \\
+   \textbf{notes}: `r\_1\_3' stands for r(1,3) Reed-Muller code and `12gencat' stands for 12-qubit generalized cat state.
+  \begin{verbatim}
+     state_vec = magic_state_vec(type_of_magic, #qubits)
+  \end{verbatim}  
+  
+\item Search for stabilizer decomp for target\_state and target\_rank\\
+  \textbf{notes}: Each SA step executes a random Pauli walk for rand\_walk\_steps.\\
+  \blank{1.2cm}The search terminates either when a decomposition is found or when max\_SA\_steps is  reached.
+  \begin{verbatim}
+     fixed_rank_stab_decomp_search(target_state,#qubits,target_rank,
+                 init_temp_inverse,final_temp_inverse,
+                 max_SA_steps,rand_walk_steps)
+  \end{verbatim}  
+  
+\item Search for stabilizer decomp for fixed target\_rank and magic code state with variable number of generators\\
+ \textbf{notes}: Stabilizer decomposition search performs a generator search when objective value does not improve for max\_idle\_steps.\\
+ \blank{1.2cm}Set max\_num\_generators = -1 to automatically compute the maximum number of generators to improve the state-of-art stabilizer rank.\\
+ \blank{1.2cm} Search repeats generator search for max\_generator\_search\_step times for each fixed generator dimension.
+  \begin{verbatim}
+     magic_state_decomp_search_v2(#qubits,rank,
+                 init_temp_inverse,final_temp_inverse,
+                 max_SA_steps,rand_walk_steps,
+                 max_idle_steps,max_num_generators,max_generator_search_step)
+  \end{verbatim}  
+  
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgments}
+The stabilizer-decomp-search package was developed as a summer Undergraduate Research Assistantship (URA) project funded by the Institute for Quantum Computing (IQC) at the University of Waterloo.
+
+I thank David Gosset, Hakop Pashayan and Hammam Qassim for their support and guidance throughout the stabilizer decomposition search project. I thank Prof. David Gosset for giving me the opportunity to work as an URA at IQC.
+
+\bibliographystyle{ieeetr}
+\bibliography{refs} 
+
+
+
+
+\end{document}

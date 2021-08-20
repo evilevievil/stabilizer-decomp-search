@@ -5,7 +5,7 @@
 function [stab_decomp,gen_array,k] = magic_state_decomp_search_v2(len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,max_idle_steps,max_k,max_k_iter)
 
     %%%%%%%%%%% init %%%%%%%%%%%
-    rng(265436); 
+    rng(0); 
     best_so_far = 0;
     if max_k <0
        max_k = floor(0.5*(len - (4*log2(decomp_len)/log2(3)))); 
@@ -90,7 +90,7 @@ function [stab_decomp,gen_array,k] = magic_state_decomp_search_v2(len,decomp_len
 
         if idle_step >= max_idle_steps
             idle_step = 0;
-            if k+1 > max_k
+            if (k+1 > max_k) && (k_iter >= max_k_iter)
                 max_idle_steps = 100;
             elseif k_iter < max_k_iter && k>0
                 [a,gen_array,leading_bits] = generator_search_v2(a,len,gen_array,leading_bits,stab_decomp,decomp_len,0,b,k);

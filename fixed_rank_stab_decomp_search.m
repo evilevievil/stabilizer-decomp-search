@@ -2,7 +2,7 @@
 %% main algorithm that searches for low-rank stabilizer decomposition of target state a
 
 %% main search function
-function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step,seed)
+function stab_decomp = fixed_rank_stab_decomp_search(a,len,decomp_len,b_init,b_final,sa_max_step,walk_max_step)
     %%%%%%%%%%% log graph data %%%%%%%%%%%
     %search_status = 0;
     %all_x = 1:(50*1000);

@@ -53,7 +53,6 @@ function [a,gen_array,leading_bits] = gen_walk(a,len,gen_array,leading_bits,k)
                 leading_bits = bitset(leading_bits,j,0);
                 gen_array(j) = 0;
             else
-                curr_index = curr_index + 1;
                 projector_Z = 1;
                 gen_bits = gen_array(j);
                 for i=1:len
@@ -65,6 +64,7 @@ function [a,gen_array,leading_bits] = gen_walk(a,len,gen_array,leading_bits,k)
                 end
                 a = 0.5 * (len_I + projector_Z) * a;
             end
+            curr_index = curr_index + 1;
         end
     end
     [a,gen_array,leading_bits] = gen_update(a,len,gen_array,leading_bits);

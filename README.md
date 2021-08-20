@@ -71,3 +71,7 @@ fixed_rank_stab_decomp_search(target_state,#qubits,target_rank,init_temp_inverse
 state_vec = magic_state_vec(type_of_magic, #qubits)
 % type_of_magic = {'T', 'H', 'catT'}
 ```
+11. search for stabilizer decomp for fixed target_rank and magic code state with variable number of generators:
+```c
+magic_state_decomp_search_v2(#qubits,rank,init_temp_inverse,final_temp_inverse,max_SA_steps,rand_walk_steps,max_idle_steps,max_num_generators,max_generator_search_step)
+```
